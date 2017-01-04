@@ -19,7 +19,12 @@ func getClient(ctx context.Context, config *oauth2.Config) *http.Client {
 	if err != nil {
 		log.Fatalf("Unable to get path to cached credential file. %v", err)
 	}
-	to, err := tokenFromFile(cacheFile)
+	token, err := tokenFromFile(cacheFile)
+	if err != nil {
+		token = getTokenFromWeb(config)
+		saveToken(cacheFile, tok)
+	}
+	return config.Client(ctx, token)
 }
 
 // tokenCacheFiele generates credential file path/filename.
