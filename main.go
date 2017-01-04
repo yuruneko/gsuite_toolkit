@@ -46,7 +46,7 @@ func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 		log.Fatalf("Unable to read authorization code %v", err)
 	}
 	
-	tok, err := config.Exchange(oauth2.NoContext, code)
+	tok, err := config.Exchange(context.TODO(), code)
 	if err != nil {
 		log.Fatalf("Unable to retrieve token from web %v", err)
 	}
@@ -101,7 +101,7 @@ func main() {
 
 	// If modifying these scopes, delete your previously saved credentials
 	// at ~/.credentials/admin-directory_v1-go-quickstart.json
-	config, err := google.ConfigFromJSON(b, admin.AdminDirectoryUserReadonlyScope)
+	config, err := google.ConfigFromJSON(b, admin.AdminDirectoryUserReadonlyScope, admin.AdminDirectoryUserScope)
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
@@ -112,8 +112,8 @@ func main() {
 		log.Fatalf("Unable to retrieve directory Client %v", err)
 	}
 
-	r, err := srv.Users.List().Customer("my_customer").MaxResults(10).
-		OrderBy("email").Do()
+	// r, err := srv.Users.List().Customer("my_customer").MaxResults(10). OrderBy("email").Do()
+	r, err := srv.Users.List().Customer("my_customer").MaxResults(500).OrderBy("email").Do()
 	if err != nil {
 		log.Fatalf("Unable to retrieve users in domain.", err)
 	}
@@ -122,8 +122,17 @@ func main() {
 		fmt.Print("No users found.\n")
 	} else {
 		fmt.Print("Users:\n")
-		for _, u := range r.Users {
-			fmt.Printf("%s (%s)\n", u.PrimaryEmail, u.Name.FullName)
+		for _, user := range r.Users {
+			if user.PrimaryEmail == "suzuki.kengo@moneyforward.co.jp" {
+				fmt.Printf("%s (%s)\n", user.PrimaryEmail, user.Name.FullName)
+				fmt.Println(user.OrgUnitPath)
+				fmt.Println(user.Organizations)
+				user.OrgUnitPath = "/dep_ciso"
+				_, err := srv.Users.Update("suzuki.kengo@moneyforward.co.jp", user).Do()
+				if err != nil {
+					log.Fatalf("fuga", err)
+				}
+			}
 		}
 	}
 }
