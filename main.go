@@ -16,14 +16,14 @@ import (
 // getClient uses a Context and Config to retrieve a Token
 // then generate a Client. It returns the generated Client.
 func getClient(ctx context.Context, config *oauth2.Config) *http.Client {
-	cacheFile, err := tokenCacheFile()
+	cacheFileName, err := tokenCacheFileName()
 	if err != nil {
 		log.Fatalf("Unable to get path to cached credential file. %v", err)
 	}
-	token, err := tokenFromFile(cacheFile)
+	token, err := tokenFromFile(cacheFileName)
 	if err != nil {
 		token = getTokenFromWeb(config)
-		saveToken(cacheFile, token)
+		saveToken(cacheFileName, token)
 	}
 	return config.Client(ctx, token)
 }
@@ -58,7 +58,7 @@ func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 
 // tokenCacheFiele generates credential file path/filename.
 // It returns the generated credential path/filename.
-func tokenCacheFile() (string, error) {
+func tokenCacheFileName() (string, error) {
 	usr, err := user.Current()
 	if err != nil {
 		return "", err
