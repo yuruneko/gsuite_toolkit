@@ -1,16 +1,20 @@
-package gsuite_admin_dir_api
+package main
 
 import (
-	"context"
-	"golang.org/x/oauth2"
-	"net/http"
-	"os/user"
-	"path/filepath"
-	"os"
-	"net/url"
-	"github.com/kotakanbe/go-cve-dictionary/log"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"net/url"
+	"os"
+	"os/user"
+	"path/filepath"
+	
+	"golang.org/x/net/context"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/admin/directory/v1"
 )
 
 // getClient uses a Context and Config to retrieve a Token
@@ -29,7 +33,7 @@ func getClient(ctx context.Context, config *oauth2.Config) *http.Client {
 }
 func saveToken(file string, token *oauth2.Token) {
 	fmt.Printf("Saving credential file to : %s\n", file)
-	f,err := os.Create(file)
+	f, err := os.Create(file)
 	defer f.Close()
 	if err != nil {
 		log.Fatalf("Unable to cache oauth token: %v", err)
@@ -45,7 +49,7 @@ func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 		"authorization code: \n%v\n", authURL)
 
 	var code string
-	if _, err := fmt.Scan(&code); err != nil{
+	if _, err := fmt.Scan(&code); err != nil {
 		log.Fatalf("Unable to read authorization code %v", err)
 	}
 
@@ -66,7 +70,7 @@ func tokenCacheFileName() (string, error) {
 	tokenCacheDir := filepath.Join(usr.HomeDir, ".credentials")
 	os.MkdirAll(tokenCacheDir, 0700)
 	return filepath.Join(tokenCacheDir,
-	url.QueryEscape("admin-directory_v1-go-quickstart.json")), err
+		url.QueryEscape("admin-directory_v1-go-quickstart.json")), err
 }
 
 // tokenFromFile retrieves a Token from a given file path.
@@ -75,9 +79,44 @@ func tokenFromFile(file string) (*oauth2.Token, error) {
 	f, err := os.Open(file)
 	defer f.Close()
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	t  := &oauth2.Token{}
+	t := &oauth2.Token{}
 	err = json.NewDecoder(f).Decode(t)
 	return t, err
+}
+
+func main() {
+	ctx := context.Background()
+	b, err := ioutil.ReadFile("client_secret.json")
+	if err != nil {
+		log.Fatalf("Unable to read client secret file : %v", err)
+	}
+
+	// If modifying these scopes, delete your previously saved credentials
+	// at ~/.credentials/admin-directory_v1-go-quickstart.json
+	config, err := google.ConfigFromJSON(b, admin.AdminDirectoryUserReadonlyScope)
+	if err != nil {
+		log.Fatalf("Unable to parse client secret file to config: %v", err)
+	}
+	client := getClient(ctx, config)
+
+	srv, err := admin.New(client)
+	if err != nil {
+		log.Fatalf("Unable to retrieve directory Client %v", err)
+	}
+
+	r, err := srv.Users.List().Customer("my_customer").MaxResults(10).OrderBy("email").Do()
+	if err != nil {
+		log.Fatalf("Unable to retrieve users in domain.", err)
+	}
+
+	if len(r.Users) == 0 {
+		fmt.Print("No users found.\n")
+	} else {
+		fmt.Print("Users:\n")
+		for _, u := range r.Users {
+			fmt.Printf("%s (%s)\n", u.PrimaryEmail, u.Name.FullName)
+		}
+	}
 }
