@@ -27,6 +27,15 @@ func getClient(ctx context.Context, config *oauth2.Config) *http.Client {
 	}
 	return config.Client(ctx, token)
 }
+func saveToken(file string, token *oauth2.Token) {
+	fmt.Printf("Saving credential file to : %s\n", file)
+	f,err := os.Create(file)
+	defer f.Close()
+	if err != nil {
+		log.Fatalf("Unable to cache oauth token: %v", err)
+	}
+	json.NewEncoder(f).Encode(token)
+}
 
 // getTokenFromWeb uses Config to request a Token.
 // Ig returns  the retieved Token.
