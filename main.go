@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"github.com/kotakanbe/go-cve-dictionary/log"
 	"encoding/json"
+	"fmt"
 )
 
 // getClient uses a Context and Config to retrieve a Token
@@ -25,6 +26,25 @@ func getClient(ctx context.Context, config *oauth2.Config) *http.Client {
 		saveToken(cacheFile, token)
 	}
 	return config.Client(ctx, token)
+}
+
+// getTokenFromWeb uses Config to request a Token.
+// Ig returns  the retieved Token.
+func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
+	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
+	fmt.Printf("Go to the following link in your browser then type the "+
+		"authorization code: \n%v\n", authURL)
+
+	var code string
+	if _, err := fmt.Scan(&code); err != nil{
+		log.Fatalf("Unable to read authorization code %v", err)
+	}
+
+	token, err := config.Exchange(context.Background(), code)
+	if err != nil {
+		log.Fatalf("Unable to retrieve token from web %v", err)
+	}
+	return token
 }
 
 // tokenCacheFiele generates credential file path/filename.
