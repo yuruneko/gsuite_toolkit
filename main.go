@@ -1,15 +1,16 @@
 package main
 
 import (
-	"google.golang.org/api/admin/directory/v1"
 	"fmt"
 	"log"
+
+	"google.golang.org/api/admin/directory/v1"
 	"github.com/ken5scal/gsuite_toolkit/client"
 )
 
 func main() {
 	scopes := []string{admin.AdminDirectoryUserReadonlyScope, admin.AdminDirectoryUserScope}
-	client, _ := (scopes)
+	client, _ := client.NewClient(scopes)
 	srv, err := admin.New(client)
 	if err != nil {
 		log.Fatalf("Unable to retrieve directory Client %v", err)
@@ -39,4 +40,3 @@ func main() {
 		}
 	}
 }
-
