@@ -8,15 +8,19 @@ import (
 	"golang.org/x/oauth2/google"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"net/url"
 	"os"
 	"os/user"
 	"path/filepath"
 )
 
+type Client struct{
+	Config *oauth2.Config
+	Token *oauth2.Token
+}
+
 // NewClient Generate New Client
-func NewClient(fileName string, scopes []string) (*http.Client) {
+func NewClient(fileName string, scopes []string) (*Client) {
 	b, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
@@ -31,7 +35,13 @@ func NewClient(fileName string, scopes []string) (*http.Client) {
 
 	token := getToken(config)
 
-	return config.Client(context.Background(), token)
+	client := &Client{
+		Config: config,
+		Token: token,
+	}
+
+	return client
+	//return config.Client(context.Background(), token)
 }
 
 func getToken(config *oauth2.Config) *oauth2.Token {
