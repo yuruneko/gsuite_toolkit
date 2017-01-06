@@ -32,14 +32,6 @@ func main() {
 		for _, user := range r.Users {
 			if user.PrimaryEmail == "suzuki.kengo@moneyforward.co.jp" {
 				ChangeOrgUnitPath(srv.Users, user, "dep_ciso")
-				//fmt.Printf("%s (%s)\n", user.PrimaryEmail, user.Name.FullName)
-				//fmt.Println(user.OrgUnitPath)
-				//fmt.Println(user.Organizations)
-				//user.OrgUnitPath = "/dep_ciso"
-				//_, err := srv.Users.Update("suzuki.kengo@moneyforward.co.jp", user).Do()
-				//if err != nil {
-				//	log.Fatalf("fuga", err)
-				//}
 			}
 		}
 	}
