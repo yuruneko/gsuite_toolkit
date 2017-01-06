@@ -16,7 +16,7 @@ import (
 )
 
 // NewClient Generate New Client
-func NewClient(scopes []string) (*http.Client, error) {
+func NewClient(scopes []string) (*http.Client) {
 	b, err := ioutil.ReadFile("client_secret.json")
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
@@ -31,7 +31,7 @@ func NewClient(scopes []string) (*http.Client, error) {
 
 	token := getToken(config)
 
-	return config.Client(context.Background(), token), err
+	return config.Client(context.Background(), token)
 }
 
 func getToken(config *oauth2.Config) *oauth2.Token {

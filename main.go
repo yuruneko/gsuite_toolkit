@@ -10,8 +10,7 @@ import (
 
 func main() {
 	scopes := []string{admin.AdminDirectoryUserReadonlyScope, admin.AdminDirectoryUserScope}
-	client, _ := client.NewClient(scopes)
-	srv, err := admin.New(client)
+	srv, err := admin.New(client.NewClient(scopes))
 	if err != nil {
 		log.Fatalf("Unable to retrieve directory Client %v", err)
 	}
