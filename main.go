@@ -8,9 +8,13 @@ import (
 	"github.com/ken5scal/gsuite_toolkit/client"
 )
 
+const (
+	clientSecretFileName = "client_secret.json"
+)
+
 func main() {
 	scopes := []string{admin.AdminDirectoryUserReadonlyScope, admin.AdminDirectoryUserScope}
-	srv, err := admin.New(client.NewClient(scopes))
+	srv, err := admin.New(client.NewClient(clientSecretFileName, scopes))
 	if err != nil {
 		log.Fatalf("Unable to retrieve directory Client %v", err)
 	}
@@ -27,9 +31,9 @@ func main() {
 		fmt.Print("Users:\n")
 		for _, user := range r.Users {
 			if user.PrimaryEmail == "suzuki.kengo@moneyforward.co.jp" {
-				fmt.Printf("%s (%s)\n", user.PrimaryEmail, user.Name.FullName)
-				fmt.Println(user.OrgUnitPath)
-				fmt.Println(user.Organizations)
+				//fmt.Printf("%s (%s)\n", user.PrimaryEmail, user.Name.FullName)
+				//fmt.Println(user.OrgUnitPath)
+				//fmt.Println(user.Organizations)
 				user.OrgUnitPath = "/dep_ciso"
 				_, err := srv.Users.Update("suzuki.kengo@moneyforward.co.jp", user).Do()
 				if err != nil {
