@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"google.golang.org/api/admin/directory/v1"
@@ -19,22 +18,16 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to retrieve directory Client %v", err)
 	}
+	user := FindUser(srv.Users, "suzuki.kengo@moneyforward.co.jp")
+	ChangeOrgUnitPath(srv.Users, user, "CISO室")
+}
 
-	// r, err := srv.Users.List().Customer("my_customer").MaxResults(10). OrderBy("email").Do()
-	r, err := srv.Users.List().Customer("my_customer").MaxResults(500).OrderBy("email").Do()
+func FindUser(service *admin.UsersService, email string)  *admin.User {
+	user ,err := service.Get(email).Do()
 	if err != nil {
-		log.Fatalf("Unable to retrieve users in domain.", err)
+		log.Fatalf("Some error%v\n", err )
 	}
-
-	if len(r.Users) == 0 {
-		fmt.Print("No users found.\n")
-	} else {
-		for _, user := range r.Users {
-			if user.PrimaryEmail == "suzuki.kengo@moneyforward.co.jp" {
-				ChangeOrgUnitPath(srv.Users, user, "dep_ciso")
-			}
-		}
-	}
+	return user
 }
 
 func ChangeOrgUnitPath(service *admin.UsersService, user *admin.User, unit string) {
