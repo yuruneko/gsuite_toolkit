@@ -6,22 +6,16 @@ import (
 
 	"google.golang.org/api/admin/directory/v1"
 	"github.com/ken5scal/gsuite_toolkit/client"
-	"net/http"
-	"context"
 )
 
 const (
 	clientSecretFileName = "client_secret.json"
 )
 
-func initClient(c *client.Client) *http.Client {
-	return c.Config.Client(context.Background(), c.Token)
-}
-
 func main() {
 	scopes := []string{admin.AdminDirectoryUserReadonlyScope, admin.AdminDirectoryUserScope}
 	c := client.NewClient(clientSecretFileName, scopes)
-	srv, err := admin.New(initClient(c))
+	srv, err := admin.New(c.Client)
 	if err != nil {
 		log.Fatalf("Unable to retrieve directory Client %v", err)
 	}

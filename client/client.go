@@ -12,11 +12,13 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"net/http"
 )
 
 type Client struct{
-	Config *oauth2.Config
-	Token *oauth2.Token
+	*oauth2.Config
+	*oauth2.Token
+	*http.Client
 }
 
 // NewClient Generate New Client
@@ -38,6 +40,7 @@ func NewClient(fileName string, scopes []string) (*Client) {
 	client := &Client{
 		Config: config,
 		Token: token,
+		Client: config.Client(context.Background(), token),
 	}
 
 	return client
