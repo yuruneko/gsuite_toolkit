@@ -44,7 +44,6 @@ func NewClient(fileName string, scopes []string) (*Client) {
 	}
 
 	return client
-	//return config.Client(context.Background(), token)
 }
 
 func getToken(config *oauth2.Config) *oauth2.Token {
