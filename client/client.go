@@ -16,8 +16,6 @@ import (
 )
 
 type Client struct{
-	*oauth2.Config
-	*oauth2.Token
 	*http.Client
 }
 
@@ -38,8 +36,6 @@ func NewClient(fileName string, scopes []string) (*Client) {
 	token := getToken(config)
 
 	client := &Client{
-		Config: config,
-		Token: token,
 		Client: config.Client(context.Background(), token),
 	}
 
