@@ -37,8 +37,16 @@ func main() {
 	}
 }
 
-func GetUsers(key string, maxResults int) {
+type hoge struct {
+	service *admin.UsersService
+}
 
+func (hoge *hoge) GetUsers(customer, key string, maxResults int64) (users *admin.Users, err error) {
+	return  hoge.service.List().
+		Customer(customer).
+		MaxResults(maxResults).
+		OrderBy(key).
+		Do()
 }
 
 func ChangeOrgUnitPath(service *admin.UsersService, user *admin.User, unit string) {
