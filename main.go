@@ -37,6 +37,10 @@ func main() {
 	}
 }
 
+func GetUsers(key string, maxResults int) {
+
+}
+
 func ChangeOrgUnitPath(service *admin.UsersService, user *admin.User, unit string) {
 	user.OrgUnitPath = "/" + unit
 	_, err := service.Update(user.PrimaryEmail, user).Do()
