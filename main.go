@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"google.golang.org/api/admin/directory/v1"
 	"github.com/ken5scal/gsuite_toolkit/client"
+	"github.com/ken5scal/gsuite_toolkit/services/users"
+	"google.golang.org/api/admin/directory/v1"
 )
 
 const (
@@ -21,18 +22,21 @@ func main() {
 	}
 
 	// r, err := srv.Users.List().Customer("my_customer").MaxResults(10). OrderBy("email").Do()
-	r, err := srv.Users.List().Customer("my_customer").MaxResults(500).OrderBy("email").Do()
+	userService := &users.Service{srv.Users}
+	r, err := userService.GetUsers("my_customer", "email", 500)
 	if err != nil {
-		log.Fatalf("Unable to retrieve users in domain.", err)
+		log.Fatalln("Unable to retrieve users in domain.", err)
 	}
 
 	if len(r.Users) == 0 {
 		fmt.Print("No users found.\n")
-	} else {
-		for _, user := range r.Users {
-			if user.PrimaryEmail == "suzuki.kengo@moneyforward.co.jp" {
-				ChangeOrgUnitPath(srv.Users, user, "dep_ciso")
-			}
+		return
+	}
+
+	for _, user := range r.Users {
+		if user.PrimaryEmail == "suzuki.kengo@moneyforward.co.jp" {
+			userService.ChangeOrgUnitPath(user, "dep_ciso")
 		}
 	}
+
 }

@@ -9,5 +9,5 @@ type OrganizationUnits struct {
 var initClient func(*client.Client)
 
 const (
-	ServiceName ="organizationunits"
+	ServiceName = "organizationunits"
 )
