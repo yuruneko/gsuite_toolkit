@@ -36,23 +36,3 @@ func main() {
 		}
 	}
 }
-
-type hoge struct {
-	service *admin.UsersService
-}
-
-func (hoge *hoge) GetUsers(customer, key string, maxResults int64) (users *admin.Users, err error) {
-	return  hoge.service.List().
-		Customer(customer).
-		MaxResults(maxResults).
-		OrderBy(key).
-		Do()
-}
-
-func ChangeOrgUnitPath(service *admin.UsersService, user *admin.User, unit string) {
-	user.OrgUnitPath = "/" + unit
-	_, err := service.Update(user.PrimaryEmail, user).Do()
-	if err != nil {
-		log.Fatalf("fuga", err)
-	}
-}
