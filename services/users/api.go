@@ -2,14 +2,15 @@ package users
 
 import (
 	"google.golang.org/api/admin/directory/v1"
-	"google.golang.org/api/googleapi"
 )
 
+// Service that provides User related administration Task
 type Service struct {
 	*admin.UsersService
 }
 
-func (service *Service) GetUsers(customer, key string, maxResults int64) (*admin.Users, error) {
+// GetEmployees retrieves employees from Gsuite organization.
+func (service *Service) GetEmployees(customer, key string, maxResults int64) (*admin.Users, error) {
 	return service.List().
 		Customer(customer).
 		MaxResults(maxResults).
@@ -17,7 +18,8 @@ func (service *Service) GetUsers(customer, key string, maxResults int64) (*admin
 		Do()
 }
 
-func (service *Service) ChangeOrgUnitPath(user *admin.User, unit string) (*admin.User, error) {
+// ChangeOrgUnit changes OrgUnit of an user.
+func (service *Service) ChangeOrgUnit(user *admin.User, unit string) (*admin.User, error) {
 	user.OrgUnitPath = "/" + unit
 	return service.Update(user.PrimaryEmail, user).Do()
 }

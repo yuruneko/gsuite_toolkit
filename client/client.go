@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 )
 
+// Client to Carry out Admin job in GSuite
 type Client struct {
 	*http.Client
 }

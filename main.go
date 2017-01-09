@@ -23,7 +23,7 @@ func main() {
 
 	// r, err := srv.Users.List().Customer("my_customer").MaxResults(10). OrderBy("email").Do()
 	userService := &users.Service{srv.Users}
-	r, err := userService.GetUsers("my_customer", "email", 500)
+	r, err := userService.GetEmployees("my_customer", "email", 500)
 	if err != nil {
 		log.Fatalln("Unable to retrieve users in domain.", err)
 	}
@@ -35,7 +35,7 @@ func main() {
 
 	for _, user := range r.Users {
 		if user.PrimaryEmail == "suzuki.kengo@moneyforward.co.jp" {
-			userService.ChangeOrgUnitPath(user, "dep_ciso")
+			userService.ChangeOrgUnit(user, "dep_ciso")
 		}
 	}
 
