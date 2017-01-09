@@ -10,11 +10,20 @@ type Service struct {
 }
 
 // GetEmployees retrieves employees from Gsuite organization.
-func (service *Service) GetEmployees(customer, key string, maxResults int64) (*admin.Users, error) {
+func (service *Service) GetEmployees(customer, key string, max int64) (*admin.Users, error) {
 	return service.List().
 		Customer(customer).
-		MaxResults(maxResults).
 		OrderBy(key).
+		MaxResults(max).
+		Do()
+}
+
+// GetAllUsersInDomain retrieves all users in domain.
+func (service *Service) GetAllUsersInDomain(domain, key string, max int64) (*admin.Users, error) {
+	return service.List().
+		Domain(domain).
+		OrderBy(key).
+		MaxResults(max).
 		Do()
 }
 
