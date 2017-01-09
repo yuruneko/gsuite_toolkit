@@ -19,6 +19,7 @@ func (service *Service) GetEmployees(customer, key string, max int64) (*admin.Us
 }
 
 // GetAllUsersInDomain retrieves all users in domain.
+// GET https://www.googleapis.com/admin/directory/v1/users?domain=example.com&maxResults=2
 func (service *Service) GetAllUsersInDomain(domain, key string, max int64) (*admin.Users, error) {
 	return service.List().
 		Domain(domain).
@@ -27,7 +28,14 @@ func (service *Service) GetAllUsersInDomain(domain, key string, max int64) (*adm
 		Do()
 }
 
-// ChangeOrgUnit changes OrgUnit of an user.
+// GetUser retrieves a user based on either email or userID
+// GET https://www.googleapis.com/admin/directory/v1/users/userKey
+//func (service *Service) GetUser(key string) (*admin.User, error) {
+//
+//}
+
+// ChangeOrgUnit changes user's OrgUnit.
+// PUT https://www.googleapis.com/admin/directory/v1/users/{email/userID}
 func (service *Service) ChangeOrgUnit(user *admin.User, unit string) (*admin.User, error) {
 	user.OrgUnitPath = "/" + unit
 	return service.Update(user.PrimaryEmail, user).Do()
