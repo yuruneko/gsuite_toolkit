@@ -31,21 +31,15 @@ func main() {
 		log.Fatalln("Unable to retrieve users in domain.", err)
 	}
 
-	fmt.Println(user)
+	fmt.Println(user.PrimaryEmail)
 
 	orgUnitService := &organizations.Service{srv.Orgunits}
-	r, err := orgUnitService.GetAllOrganizationUnits()
-	//orgUnit, err := orgUnitService.CreateOrganizationUnit("セキュリティ推進グループ", "/moneyforward.co.jp/CISO室")
-	if err != nil {
-		log.Fatalln("Failed creating New Org Unit.", err)
-	}
-
-	if len(r.OrganizationUnits) == 0 {
-		fmt.Println("No organization units found")
-		return
-	}
-
-	for _, ou := range r.OrganizationUnits {
-		fmt.Println(ou)
-	}
+	//r, err := orgUnitService.CreateOrganizationUnit("セキュリティ推進グループ", "/dept_ciso")
+	//if err != nil {
+	//	log.Fatalln("Failed creating New Org Unit.", err)
+	//}
+	//
+	//fmt.Println(r)
+	r, err := orgUnitService.Get
+	r, err := orgUnitService.UpdateOrganizationUnit([]string("/dept_ciso"), )
 }
