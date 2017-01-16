@@ -4,7 +4,9 @@ import (
 	"google.golang.org/api/admin/directory/v1"
 )
 
-// Service that provides User related administration Task
+// Service provides User related administration Task
+// Details are available in a following link
+// https://developers.google.com/admin-sdk/directory/v1/guides/manage-users
 type Service struct {
 	*admin.UsersService
 }
