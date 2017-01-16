@@ -7,6 +7,7 @@ import (
 	"github.com/ken5scal/gsuite_toolkit/client"
 	"github.com/ken5scal/gsuite_toolkit/services/users"
 	"google.golang.org/api/admin/directory/v1"
+	"github.com/ken5scal/gsuite_toolkit/services/structure/organizations"
 )
 
 const (
@@ -14,7 +15,7 @@ const (
 )
 
 func main() {
-	scopes := []string{admin.AdminDirectoryUserReadonlyScope, admin.AdminDirectoryUserScope}
+	scopes := []string{admin.AdminDirectoryOrgunitScope, admin.AdminDirectoryUserScope}
 	c := client.NewClient(clientSecretFileName, scopes)
 	srv, err := admin.New(c.Client)
 	if err != nil {
@@ -31,6 +32,12 @@ func main() {
 
 	fmt.Println(user)
 
+	orgUnitService := &organizations.Service{srv.Orgunits}
+	orgUnit, err := orgUnitService.CreateOrganizationUnit("セキュリティ推進グループ", "/moneyforward.co.jp/CISO室")
+	if err != nil {
+		log.Fatalln("Failed creating New Org Unit.", err)
+	}
+	fmt.Println(orgUnit)
 	//if len(r.Users) == 0 {
 	//	fmt.Print("No users found.\n")
 	//	return
