@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/ken5scal/gsuite_toolkit/client"
-	"github.com/ken5scal/gsuite_toolkit/services/structure/organizations"
 	"github.com/ken5scal/gsuite_toolkit/services/users"
 	"google.golang.org/api/admin/directory/v1"
 
@@ -33,7 +32,12 @@ func main() {
 
 	fmt.Println(user.PrimaryEmail)
 
-	orgUnitService := &organizations.Service{srv.Orgunits}
+	_, err = userService.ChangeOrgUnit(user, "CISO室/セキュリティ推進グループ")
+	if err != nil {
+		log.Fatalln("Failed Changing user's Organizaion unit.", err)
+	}
+
+	//orgUnitService := &organizations.Service{srv.Orgunits}
 	//r, err := orgUnitService.CreateOrganizationUnit("セキュリティ推進グループ", "/dept_ciso")
 	//if err != nil {
 	//	log.Fatalln("Failed creating New Org Unit.", err)
@@ -41,14 +45,14 @@ func main() {
 	//
 	//fmt.Println(r)
 	//r, err := orgUnitService.GetOrganizationUnit("dept_ciso/セキュリティ推進グループ")
-	r, err := orgUnitService.GetOrganizationUnit("dept_ciso")
-	if err != nil {
-		log.Fatalln("Failed creating New Org Unit.", err)
-	}
+	//r, err := orgUnitService.GetOrganizationUnit("dept_ciso")
+	//if err != nil {
+	//	log.Fatalln("Failed creating New Org Unit.", err)
+	//}
 
-	r.Name = "CISO室"
-	r, err = orgUnitService.UpdateOrganizationUnit(r, "dept_ciso")
-	if err != nil {
-		log.Fatalln("Failed Changing Org Unit.", err)
-	}
+	//r.Name = "CISO室"
+	//r, err = orgUnitService.UpdateOrganizationUnit(r, "dept_ciso")
+	//if err != nil {
+	//	log.Fatalln("Failed Changing Org Unit.", err)
+	//}
 }
