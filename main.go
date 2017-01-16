@@ -40,6 +40,15 @@ func main() {
 	//}
 	//
 	//fmt.Println(r)
-	r, err := orgUnitService.Get
-	r, err := orgUnitService.UpdateOrganizationUnit([]string("/dept_ciso"), )
+	//r, err := orgUnitService.GetOrganizationUnit("dept_ciso/セキュリティ推進グループ")
+	r, err := orgUnitService.GetOrganizationUnit("dept_ciso")
+	if err != nil {
+		log.Fatalln("Failed creating New Org Unit.", err)
+	}
+
+	r.Name = "CISO室"
+	r, err = orgUnitService.UpdateOrganizationUnit(r, "dept_ciso")
+	if err != nil {
+		log.Fatalln("Failed Changing Org Unit.", err)
+	}
 }

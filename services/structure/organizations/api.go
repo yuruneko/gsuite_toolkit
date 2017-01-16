@@ -1,6 +1,8 @@
 package organizations
 
-import "google.golang.org/api/admin/directory/v1"
+import (
+	"google.golang.org/api/admin/directory/v1"
+)
 
 // Service provides Organization Units related functionality
 // Details are available in a following link
@@ -14,7 +16,7 @@ type Service struct {
 func (service *Service) GetOrganizationUnit(paths ...string) (*admin.OrgUnit, error) {
 	var completePath []string
 	for _, path := range paths {
-		completePath = append(completePath, "/"+path)
+		completePath = append(completePath, path)
 	}
 	return service.Get("my_customer", completePath).Do()
 }
@@ -40,6 +42,10 @@ func (service *Service) CreateOrganizationUnit(name, parentOrgUnitPath string) (
 //{
 //  "description": "The BEST sales support team"
 //}
-func (service *Service) UpdateOrganizationUnit(path []string, NewOrgUnit *admin.OrgUnit) (*admin.OrgUnit, error) {
+func (service *Service) UpdateOrganizationUnit(NewOrgUnit *admin.OrgUnit, paths ...string) (*admin.OrgUnit, error) {
+	var path []string
+	for _, p := range paths {
+		path = append(path, p)
+	}
 	return service.Patch("my_customer", path, NewOrgUnit).Do()
 }
