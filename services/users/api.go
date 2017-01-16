@@ -31,7 +31,7 @@ func (service *Service) GetAllUsersInDomain(domain, key string, max int64) (*adm
 // GetUser retrieves a user based on either email or userID
 // GET https://www.googleapis.com/admin/directory/v1/users/userKey
 func (service *Service) GetUser(key string) (*admin.User, error) {
-	return service.Get(key).Do()
+	return service.Get(key).ViewType("domain_public").Do()
 }
 
 // ChangeOrgUnit changes user's OrgUnit.
