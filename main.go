@@ -40,24 +40,13 @@ func main() {
 	}
 
 	parentName := "CISO室"
-	units := []string{"サービスインフラグループ", "社内インフラグループ", "情報セキュリティ管理部"}
+	unitNames := []string{"サービスインフラグループ", "社内インフラグループ", "情報セキュリティ管理部"}
 	orgUnitService := &organizations.Service{srv.Orgunits}
-
-	if len(units) < 1 {
-		return
-	}
-
-	_, err = orgUnitService.GetOrganizationUnit(parentName)
+	_, err = orgUnitService.CreateOrganizationUnits(unitNames, parentName)
 	if err != nil {
-		log.Fatalf("Could Not find Path: %v, %v", parentName, err)
+		log.Fatalln(err)
 	}
 
-	for _, unitName := range units {
-		_, err = orgUnitService.CreateOrganizationUnit(unitName, "/" + parentName)
-		if err != nil {
-			log.Fatalln("Failed creating New Org Unit.", err)
-		}
-	}
 	//
 	//fmt.Println(r)
 	//r, err := orgUnitService.GetOrganizationUnit("dept_ciso/セキュリティ推進グループ")
