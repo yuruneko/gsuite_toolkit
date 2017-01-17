@@ -8,6 +8,9 @@ import (
 	"google.golang.org/api/admin/directory/v1"
 
 	"fmt"
+	"strings"
+	"net/http"
+	"io/ioutil"
 )
 
 const (
@@ -58,4 +61,20 @@ func main() {
 	//if err != nil {
 	//	log.Fatalln("Failed Changing Org Unit.", err)
 	//}
+
+	url := "https://www.googleapis.com/batch"
+
+	payload := strings.NewReader("--batch_0123456789\nContent-Type: application/http\nContent-ID: <item1:suzuki.kengo@moneyforward.co.jp>\n\nGET https://www.googleapis.com/admin/directory/v1/users/suzuki.kengo@moneyforward.co.jp\n\n--batch_0123456789\nContent-Type: application/http\nContent-ID: <item2:suzuki.kengo@moneyforward.co.jp>\n\nGET https://www.googleapis.com/admin/directory/v1/users/ichikawa.takashi@moneyforward.co.jp\n\n--batch_0123456789--")
+
+	req, _ := http.NewRequest("POST", url, payload)
+
+	req.Header.Add("content-type", "multipart/mixed; boundary=batch_0123456789")
+	req.Header.Add("authorization", "Bearer someToken")
+	res, _ := c.Do(req)
+
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+
+	fmt.Println(res)
+	fmt.Println(string(body))
 }
