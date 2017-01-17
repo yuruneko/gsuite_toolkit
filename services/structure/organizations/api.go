@@ -1,6 +1,8 @@
 package organizations
 
 import (
+	"errors"
+	"fmt"
 	"google.golang.org/api/admin/directory/v1"
 )
 
@@ -37,7 +39,33 @@ func (service *Service) CreateOrganizationUnit(name, parentOrgUnitPath string) (
 	return service.Insert("my_customer", newOrgUnit).Do()
 }
 
-// UpdateOrganizationUnit
+// CreateOrganizationUnits creates multiple organization units under same parent Org Unit
+func (service *Service) CreateOrganizationUnits(names []string, parentOrgUnitPath string) ([]*admin.OrgUnit, error) {
+	if len(names) < 1 {
+		return nil, errors.New("No Names are defined")
+	}
+
+	_, err := service.GetOrganizationUnit(parentOrgUnitPath)
+	if err != nil {
+		return nil, err
+	}
+
+	var createdOrgUnits []*admin.OrgUnit
+	e := &OrgUnitCreateError{}
+
+	for _, unitName := range names {
+		r, err := service.CreateOrganizationUnit(unitName, "/"+parentOrgUnitPath)
+		if err != nil {
+			e.ConcatenateMessage(unitName, err)
+		} else {
+			createdOrgUnits = append(createdOrgUnits, r)
+		}
+	}
+
+	return createdOrgUnits, e
+}
+
+// UpdateOrganizationUnit updates an org unit specified in the path.
 // PUT https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/corp/support/sales_support
 //{
 //  "description": "The BEST sales support team"
@@ -48,4 +76,28 @@ func (service *Service) UpdateOrganizationUnit(NewOrgUnit *admin.OrgUnit, paths 
 		path = append(path, p)
 	}
 	return service.Patch("my_customer", path, NewOrgUnit).Do()
+}
+
+// OrgUnitCreateError implements Error interface and used when creating org unit fails
+type OrgUnitCreateError struct {
+	messages map[string]string
+}
+
+func (err *OrgUnitCreateError) Error() string {
+	errorMessage := ""
+
+	for unit, message := range err.messages {
+		errorMessage = errorMessage + unit + " -> " + message + "\n"
+	}
+
+	return fmt.Sprintf("Failed creating following orgUnit:\n%s", errorMessage)
+}
+
+// ConcatenateMessage takes organizationUnit that failed to be created.
+func (err *OrgUnitCreateError) ConcatenateMessage(failedOrgUnit string, e error) {
+	if err.messages == nil {
+		err.messages = make(map[string]string)
+	}
+
+	err.messages[failedOrgUnit] = e.Error()
 }

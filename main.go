@@ -1,13 +1,16 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/ken5scal/gsuite_toolkit/client"
 	"github.com/ken5scal/gsuite_toolkit/services/users"
 	"google.golang.org/api/admin/directory/v1"
 
+	"fmt"
+	"strings"
+	"net/http"
+	"io/ioutil"
 )
 
 const (
@@ -32,16 +35,19 @@ func main() {
 
 	fmt.Println(user.PrimaryEmail)
 
-	_, err = userService.ChangeOrgUnit(user, "CISO室/セキュリティ推進グループ")
-	if err != nil {
-		log.Fatalln("Failed Changing user's Organizaion unit.", err)
-	}
-
-	//orgUnitService := &organizations.Service{srv.Orgunits}
-	//r, err := orgUnitService.CreateOrganizationUnit("セキュリティ推進グループ", "/dept_ciso")
+	//_, err = userService.ChangeOrgUnit(user, "CISO室/セキュリティ推進グループ")
 	//if err != nil {
-	//	log.Fatalln("Failed creating New Org Unit.", err)
+	//	log.Fatalln("Failed Changing user's Organizaion unit.", err)
 	//}
+
+	//parentName := "CISO室"
+	//unitNames := []string{"セキュリティ推進グループ", "サービスインフラグループ", "社内インフラグループ", "情報セキュリティ管理部"}
+	//orgUnitService := &organizations.Service{srv.Orgunits}
+	//_, err = orgUnitService.CreateOrganizationUnits(unitNames, parentName)
+	//if err != nil {
+	//	log.Fatalln(err)
+	//}
+
 	//
 	//fmt.Println(r)
 	//r, err := orgUnitService.GetOrganizationUnit("dept_ciso/セキュリティ推進グループ")
@@ -55,4 +61,20 @@ func main() {
 	//if err != nil {
 	//	log.Fatalln("Failed Changing Org Unit.", err)
 	//}
+
+	url := "https://www.googleapis.com/batch"
+
+	payload := strings.NewReader("--batch_0123456789\nContent-Type: application/http\nContent-ID: <item1:suzuki.kengo@moneyforward.co.jp>\n\nGET https://www.googleapis.com/admin/directory/v1/users/suzuki.kengo@moneyforward.co.jp\n\n--batch_0123456789\nContent-Type: application/http\nContent-ID: <item2:suzuki.kengo@moneyforward.co.jp>\n\nGET https://www.googleapis.com/admin/directory/v1/users/ichikawa.takashi@moneyforward.co.jp\n\n--batch_0123456789--")
+
+	req, _ := http.NewRequest("POST", url, payload)
+
+	req.Header.Add("content-type", "multipart/mixed; boundary=batch_0123456789")
+	req.Header.Add("authorization", "Bearer someToken")
+	res, _ := c.Do(req)
+
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+
+	fmt.Println(res)
+	fmt.Println(string(body))
 }
