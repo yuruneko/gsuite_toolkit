@@ -34,10 +34,10 @@ func main() {
 
 	fmt.Println(user.PrimaryEmail)
 
-	_, err = userService.ChangeOrgUnit(user, "CISO室/セキュリティ推進グループ")
-	if err != nil {
-		log.Fatalln("Failed Changing user's Organizaion unit.", err)
-	}
+	//_, err = userService.ChangeOrgUnit(user, "CISO室/セキュリティ推進グループ")
+	//if err != nil {
+	//	log.Fatalln("Failed Changing user's Organizaion unit.", err)
+	//}
 
 	parentName := "CISO室"
 	unitNames := []string{"セキュリティ推進グループ", "サービスインフラグループ", "社内インフラグループ", "情報セキュリティ管理部"}
