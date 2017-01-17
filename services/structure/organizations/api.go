@@ -88,9 +88,13 @@ func (err *OrgUnitCreateError) Error() string {
 		errorMessage = errorMessage + unit + " -> " + message + "\n"
 	}
 
-	return fmt.Sprintf("Failed creating following orgUnit:\n %s", errorMessage)
+	return fmt.Sprintf("Failed creating following orgUnit:\n%s", errorMessage)
 }
 
 func (err *OrgUnitCreateError) ConcatenateMessage(failedOrgUnit string, e error) {
+	if err.messages == nil {
+		err.messages = make(map[string]string)
+	}
+
 	err.messages[failedOrgUnit] = e.Error()
 }

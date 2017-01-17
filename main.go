@@ -40,7 +40,7 @@ func main() {
 	}
 
 	parentName := "CISO室"
-	unitNames := []string{"サービスインフラグループ", "社内インフラグループ", "情報セキュリティ管理部"}
+	unitNames := []string{"セキュリティ推進グループ", "サービスインフラグループ", "社内インフラグループ", "情報セキュリティ管理部"}
 	orgUnitService := &organizations.Service{srv.Orgunits}
 	_, err = orgUnitService.CreateOrganizationUnits(unitNames, parentName)
 	if err != nil {
