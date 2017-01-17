@@ -8,21 +8,20 @@ import (
 	"golang.org/x/oauth2/google"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"os/user"
 	"path/filepath"
-	"net/http"
 )
 
-type Client struct{
-	*oauth2.Config
-	*oauth2.Token
+// Client to Carry out Admin job in GSuite
+type Client struct {
 	*http.Client
 }
 
 // NewClient Generate New Client
-func NewClient(fileName string, scopes []string) (*Client) {
+func NewClient(fileName string, scopes []string) *Client {
 	b, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
@@ -38,8 +37,6 @@ func NewClient(fileName string, scopes []string) (*Client) {
 	token := getToken(config)
 
 	client := &Client{
-		Config: config,
-		Token: token,
 		Client: config.Client(context.Background(), token),
 	}
 
