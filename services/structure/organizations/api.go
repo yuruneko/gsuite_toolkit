@@ -1,9 +1,9 @@
 package organizations
 
 import (
-	"google.golang.org/api/admin/directory/v1"
 	"errors"
 	"fmt"
+	"google.golang.org/api/admin/directory/v1"
 )
 
 // Service provides Organization Units related functionality
@@ -39,6 +39,7 @@ func (service *Service) CreateOrganizationUnit(name, parentOrgUnitPath string) (
 	return service.Insert("my_customer", newOrgUnit).Do()
 }
 
+// CreateOrganizationUnits creates multiple organization units under same parent Org Unit
 func (service *Service) CreateOrganizationUnits(names []string, parentOrgUnitPath string) ([]*admin.OrgUnit, error) {
 	if len(names) < 1 {
 		return nil, errors.New("No Names are defined")
@@ -53,7 +54,7 @@ func (service *Service) CreateOrganizationUnits(names []string, parentOrgUnitPat
 	e := &OrgUnitCreateError{}
 
 	for _, unitName := range names {
-		r, err := service.CreateOrganizationUnit(unitName, "/" + parentOrgUnitPath)
+		r, err := service.CreateOrganizationUnit(unitName, "/"+parentOrgUnitPath)
 		if err != nil {
 			e.ConcatenateMessage(unitName, err)
 		} else {
@@ -64,7 +65,7 @@ func (service *Service) CreateOrganizationUnits(names []string, parentOrgUnitPat
 	return createdOrgUnits, e
 }
 
-// UpdateOrganizationUnit
+// UpdateOrganizationUnit updates an org unit specified in the path.
 // PUT https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/corp/support/sales_support
 //{
 //  "description": "The BEST sales support team"
@@ -77,6 +78,7 @@ func (service *Service) UpdateOrganizationUnit(NewOrgUnit *admin.OrgUnit, paths 
 	return service.Patch("my_customer", path, NewOrgUnit).Do()
 }
 
+// OrgUnitCreateError implements Error interface and used when creating org unit fails
 type OrgUnitCreateError struct {
 	messages map[string]string
 }
@@ -91,6 +93,7 @@ func (err *OrgUnitCreateError) Error() string {
 	return fmt.Sprintf("Failed creating following orgUnit:\n%s", errorMessage)
 }
 
+// ConcatenateMessage takes organizationUnit that failed to be created.
 func (err *OrgUnitCreateError) ConcatenateMessage(failedOrgUnit string, e error) {
 	if err.messages == nil {
 		err.messages = make(map[string]string)

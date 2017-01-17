@@ -8,7 +8,6 @@ import (
 	"google.golang.org/api/admin/directory/v1"
 
 	"fmt"
-	"github.com/ken5scal/gsuite_toolkit/services/structure/organizations"
 )
 
 const (
@@ -22,7 +21,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to retrieve directory Client %v", err)
 	}
-
 
 	// r, err := srv.Users.List().Customer("my_customer").MaxResults(10). OrderBy("email").Do()
 	userService := &users.Service{srv.Users}
@@ -39,13 +37,13 @@ func main() {
 	//	log.Fatalln("Failed Changing user's Organizaion unit.", err)
 	//}
 
-	parentName := "CISO室"
-	unitNames := []string{"セキュリティ推進グループ", "サービスインフラグループ", "社内インフラグループ", "情報セキュリティ管理部"}
-	orgUnitService := &organizations.Service{srv.Orgunits}
-	_, err = orgUnitService.CreateOrganizationUnits(unitNames, parentName)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	//parentName := "CISO室"
+	//unitNames := []string{"セキュリティ推進グループ", "サービスインフラグループ", "社内インフラグループ", "情報セキュリティ管理部"}
+	//orgUnitService := &organizations.Service{srv.Orgunits}
+	//_, err = orgUnitService.CreateOrganizationUnits(unitNames, parentName)
+	//if err != nil {
+	//	log.Fatalln(err)
+	//}
 
 	//
 	//fmt.Println(r)
