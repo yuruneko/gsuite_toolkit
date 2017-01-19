@@ -31,11 +31,10 @@ func main() {
 	userService := &users.Service{srv.Users}
 	//_, err := userService.GetEmployees("my_customer", "email", 500)
 	//_, err = userService.ChangeOrgUnit(user, "社員・委託社員・派遣社員・アルバイト")
-	user, err := userService.GetUser("suzuki.kengo@moneyforward.co.jp")
+	_, err = userService.GetUser("suzuki.kengo@moneyforward.co.jp")
 	if err != nil {
 		log.Fatalln("Failed Changing user's Organizaion unit.", err)
 	}
-	fmt.Println(user)
 
 	reportService, err := report.New(c.Client)
 	if err != nil {
@@ -44,16 +43,17 @@ func main() {
 
 	r, err := reportService.
 	UserUsageReport.
-		Get("suzuki.kengo@Moneyforward.co.jp", "2017-01-17").
-		Parameters("accounts:is_2sv_enrolled,accounts:is_2sv_enforced").
+		Get("all", "2017-01-17").
+		Parameters("accounts:is_2sv_enrolled").
 		Do()
 	//r, err := reportService.Activities.List("all", "login").MaxResults(10).Do()
 	if err != nil {
-		log.Fatalf("Unable to retrieve logins to domain.", err)
+		log.Fatalf("Unable to retrieve logins to domain: %v", err)
 	}
 
-	for _, param := range r.UsageReports[0].Parameters {
-		fmt.Printf("%v: %v\n", param.Name , param.BoolValue)
+	for _, reports := range r.UsageReports {
+		fmt.Println(reports.Entity.UserEmail)
+		fmt.Printf("%v: %v\n", reports.Parameters[0].Name , reports.Parameters[0].BoolValue)
 	}
 
 	//if len(r.Items) == 0 {
