@@ -13,6 +13,7 @@ import (
 	"os"
 	"strings"
 	"github.com/ken5scal/gsuite_toolkit/services/reports"
+	"time"
 )
 
 const (
@@ -28,22 +29,14 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	r, err := reports.GetUserUsage(s)
+	t := time.Now().Add(-time.Duration(2 * time.Hour * 24))
+	ts := strings.Split(t.Format(time.RFC3339), "T")
+	r, err := s.GetNon2StepVerifiedUsers(ts[0])
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	count := 0
-
-	for _, reports := range r.UsageReports {
-		//fmt.Println(reports.Entity.UserEmail)
-		//
-		if reports.Parameters[0].BoolValue {
-			fmt.Println(reports.Entity.UserEmail)
-			count++
-		}
-	}
-	fmt.Println(count)
+	fmt.Println(len(r))
 
 	//if len(r.Items) == 0 {
 	//	fmt.Println("No logins found.")

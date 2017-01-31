@@ -34,15 +34,32 @@ func NewService(client *http.Client) (*Service, error) {
 		client}, nil
 }
 
-func GetUserUsage(s *Service) (*admin.UsageReports, error) {
+//
+func (s *Service) GetUserUsage(key, date, params string) (*admin.UsageReports, error) {
 	return s.UserUsageReportService.
-		Get("all", "2017-01-26").
-		Parameters("accounts:is_2sv_enrolled").
+		Get(key, date).
+		Parameters(params).
 		Do()
 }
 
-// Example:
-func GetLoginActivities(s *Service) (*admin.Activities, error) {
-	return s.ActivitiesService.List("all", "login").MaxResults(10).Do()
+// Date Must be in ISO 8601 format, yyyy-mm-dd
+func (s *Service) GetNon2StepVerifiedUsers(date string) ([]string, error) {
+	var users []string
+
+	usageReports, err := s.GetUserUsage("all", date, "accounts:is_2sv_enrolled")
+	if err != nil {
+		return users, err
+	}
+
+	for _, r := range usageReports.UsageReports {
+		if !r.Parameters[0].BoolValue {
+			users = append(users, r.Entity.UserEmail)
+		}
+	}
+	return users, nil
 }
 
+// Example:
+func (s *Service) GetLoginActivities() (*admin.Activities, error) {
+	return s.ActivitiesService.List("all", "login").MaxResults(10).Do()
+}
