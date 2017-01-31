@@ -4,7 +4,6 @@ import (
 	"log"
 
 	"github.com/ken5scal/gsuite_toolkit/client"
-	"github.com/ken5scal/gsuite_toolkit/services/users"
 
 	"encoding/csv"
 	"os"
@@ -13,7 +12,6 @@ import (
 	"fmt"
 	admin "google.golang.org/api/admin/directory/v1"
 	report  "google.golang.org/api/admin/reports/v1"
-
 )
 
 const (
@@ -23,38 +21,34 @@ const (
 func main() {
 	scopes := []string{admin.AdminDirectoryOrgunitScope, admin.AdminDirectoryUserScope, report.AdminReportsAuditReadonlyScope, report.AdminReportsUsageReadonlyScope}
 	c := client.NewClient(clientSecretFileName, scopes)
-	srv, err := admin.New(c.Client)
-	if err != nil {
-		log.Fatalf("Unable to retrieve directory Client %v", err)
-	}
-
-	userService := &users.Service{srv.Users}
-	//_, err := userService.GetEmployees("my_customer", "email", 500)
-	//_, err = userService.ChangeOrgUnit(user, "社員・委託社員・派遣社員・アルバイト")
-	_, err = userService.GetUser("suzuki.kengo@moneyforward.co.jp")
-	if err != nil {
-		log.Fatalln("Failed Changing user's Organizaion unit.", err)
-	}
 
 	reportService, err := report.New(c.Client)
 	if err != nil {
-		log.Fatalf("Unable to retrieve reports Client %v", err)
+		log.Fatalln("Unable to retrieve reports Client.", err)
 	}
 
 	r, err := reportService.
 	UserUsageReport.
-		Get("all", "2017-01-17").
+		Get("all", "2017-01-26").
 		Parameters("accounts:is_2sv_enrolled").
 		Do()
 	//r, err := reportService.Activities.List("all", "login").MaxResults(10).Do()
 	if err != nil {
-		log.Fatalf("Unable to retrieve logins to domain: %v", err)
+		log.Fatalln(err)
 	}
 
+	count := 0
+
 	for _, reports := range r.UsageReports {
-		fmt.Println(reports.Entity.UserEmail)
-		fmt.Printf("%v: %v\n", reports.Parameters[0].Name , reports.Parameters[0].BoolValue)
+		//fmt.Println(reports.Entity.UserEmail)
+		//
+		if reports.Parameters[0].BoolValue {
+			fmt.Println(reports.Entity.UserEmail)
+			//fmt.Printf("%v: %v\n", reports.Parameters[0].Name , reports.Parameters[0].BoolValue)
+			count++
+		}
 	}
+	fmt.Println(count)
 
 	//if len(r.Items) == 0 {
 	//	fmt.Println("No logins found.")
@@ -76,7 +70,7 @@ func main() {
 	//_, err = orgUnitService.CreateOrganizationUnits("CISO室", []string{"セキュリティ推進グループ", "サービスインフラグループ", "社内インフラグループ", "情報セキュリティ管理部"})
 	//_, err = orgUnitService.GetOrganizationUnit("CISO室/セキュリティ推進グループ")
 	//_, err = orgUnitService.UpdateOrganizationUnit(r, "CISO室")
-
+	//
 	//payload := constructPayload("/Users/suzuki/Desktop/org_structure.csv")
 	//fmt.Println(payload)
 	//url := "https://www.googleapis.com/batch"

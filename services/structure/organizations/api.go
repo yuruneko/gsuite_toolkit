@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"google.golang.org/api/admin/directory/v1"
+	"net/http"
+	"log"
 )
 
 // Service provides Organization Units related functionality
@@ -11,6 +13,15 @@ import (
 // https://developers.google.com/admin-sdk/directory/v1/guides/manage-org-units#create_ou
 type Service struct {
 	*admin.OrgunitsService
+	*http.Client
+}
+
+func NewService(client *http.Client) *Service {
+	srv, err := admin.New(client)
+	if err != nil {
+		log.Fatalf("Unable to retrieve directory Client %v", err)
+	}
+	return &Service{srv.Orgunits, client}
 }
 
 // GetOrganizationUnit retrieves specific organization unit
