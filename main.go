@@ -30,29 +30,13 @@ func main() {
 	}
 
 	t := time.Now().Add(-time.Duration(2 * time.Hour * 24))
-	ts := strings.Split(t.Format(time.RFC3339), "T")
+	ts := strings.Split(t.Format(time.RFC3339), "T") // yyyy-mm-dd
 	r, err := s.GetNon2StepVerifiedUsers(ts[0])
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	fmt.Println(len(r))
-
-	//if len(r.Items) == 0 {
-	//	fmt.Println("No logins found.")
-	//} else {
-	//	fmt.Println("Logins:")
-	//	for _, a := range r.Items {
-	//		t, err := time.Parse(time.RFC3339Nano, a.Id.Time)
-	//		if err != nil {
-	//			fmt.Println("Unable to parse login time.")
-	//			// Set time to zero.
-	//			t = time.Time{}
-	//		}
-	//		fmt.Printf("%s: %s %s\n", t.Format(time.RFC822), a.Actor.Email,
-	//			a.Events[0].Name)
-	//	}
-	//}
 
 	//orgUnitService := &organizations.Service{srv.Orgunits}
 	//_, err = orgUnitService.CreateOrganizationUnits("CISO室", []string{"セキュリティ推進グループ", "サービスインフラグループ", "社内インフラグループ", "情報セキュリティ管理部"})

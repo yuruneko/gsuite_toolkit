@@ -34,7 +34,11 @@ func NewService(client *http.Client) (*Service, error) {
 		client}, nil
 }
 
-//
+// GetUserUsage returns G Suite service activities across your account's users
+// key should be either "all" or primary id
+// params should be one or combination of user report parameters
+// https://developers.google.com/admin-sdk/reports/v1/guides/manage-usage-users
+// Example:GetUserUsage("all", "2017-01-01", "accounts:is_2sv_enrolled,"accounts:last_name"")
 func (s *Service) GetUserUsage(key, date, params string) (*admin.UsageReports, error) {
 	return s.UserUsageReportService.
 		Get(key, date).
@@ -42,7 +46,9 @@ func (s *Service) GetUserUsage(key, date, params string) (*admin.UsageReports, e
 		Do()
 }
 
-// Date Must be in ISO 8601 format, yyyy-mm-dd
+// GetNon2StepVerifiedUsers returns emails of users who have not yet enabled 2 step verification.
+// date Must be in ISO 8601 format, yyyy-mm-dd
+// Example: GetNon2StepVerifiedUsers("2017-01-01")
 func (s *Service) GetNon2StepVerifiedUsers(date string) ([]string, error) {
 	var users []string
 
