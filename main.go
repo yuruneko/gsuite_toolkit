@@ -8,6 +8,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	admin "google.golang.org/api/admin/directory/v1"
+	report "google.golang.org/api/admin/reports/v1"
 	"io"
 	"os"
 	"strings"
@@ -22,7 +23,7 @@ const (
 func main() {
 	scopes := []string{
 		admin.AdminDirectoryOrgunitScope, admin.AdminDirectoryUserScope,
-		reports.Scopes["AuditReadOnly"], reports.Scopes["UsageReadOnly"],
+		report.AdminReportsAuditReadonlyScope, report.AdminReportsUsageReadonlyScope,
 	}
 	c := client.NewClient(clientSecretFileName, scopes)
 
