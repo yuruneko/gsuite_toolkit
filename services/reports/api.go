@@ -5,6 +5,11 @@ import (
 	"net/http"
 )
 
+var Scopes = map[string]string {
+	"AuditReadOnly":admin.AdminReportsAuditReadonlyScope,
+	"UsageReadOnly":admin.AdminReportsUsageReadonlyScope,
+}
+
 // Service provides following functions.
 // Content management with Google Drive activity reports.
 // Audit administrator actions.
