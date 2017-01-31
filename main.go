@@ -6,12 +6,13 @@ import (
 	"github.com/ken5scal/gsuite_toolkit/client"
 
 	"encoding/csv"
-	"os"
-	"io"
-	"strings"
 	"fmt"
 	admin "google.golang.org/api/admin/directory/v1"
-	report  "google.golang.org/api/admin/reports/v1"
+	report "google.golang.org/api/admin/reports/v1"
+	"io"
+	"os"
+	"strings"
+	"github.com/ken5scal/gsuite_toolkit/services/reports"
 )
 
 const (
@@ -22,17 +23,12 @@ func main() {
 	scopes := []string{admin.AdminDirectoryOrgunitScope, admin.AdminDirectoryUserScope, report.AdminReportsAuditReadonlyScope, report.AdminReportsUsageReadonlyScope}
 	c := client.NewClient(clientSecretFileName, scopes)
 
-	reportService, err := report.New(c.Client)
+	s, err := reports.NewService(c.Client)
 	if err != nil {
-		log.Fatalln("Unable to retrieve reports Client.", err)
+		log.Fatalln(err)
 	}
 
-	r, err := reportService.
-	UserUsageReport.
-		Get("all", "2017-01-26").
-		Parameters("accounts:is_2sv_enrolled").
-		Do()
-	//r, err := reportService.Activities.List("all", "login").MaxResults(10).Do()
+	r, err := reports.GetUserUsage(s)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -44,7 +40,6 @@ func main() {
 		//
 		if reports.Parameters[0].BoolValue {
 			fmt.Println(reports.Entity.UserEmail)
-			//fmt.Printf("%v: %v\n", reports.Parameters[0].Name , reports.Parameters[0].BoolValue)
 			count++
 		}
 	}
@@ -115,7 +110,7 @@ func constructPayload(filePath string) string {
 
 func RequestLine(method string, email string) string {
 	//return "GET https://www.googleapis.com/admin/directory/v1/users/" +  email
-	return method + " " + "https://www.googleapis.com/admin/directory/v1/users/" +  email + "\n" +
+	return method + " " + "https://www.googleapis.com/admin/directory/v1/users/" + email + "\n" +
 		"Content-Type: application/json\n\n" + Body()
 }
 

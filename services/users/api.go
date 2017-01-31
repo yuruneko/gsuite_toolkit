@@ -3,7 +3,6 @@ package users
 import (
 	"google.golang.org/api/admin/directory/v1"
 	"net/http"
-	"log"
 )
 
 // Service provides User related administration Task
@@ -14,12 +13,13 @@ type Service struct {
 	*http.Client
 }
 
-func NewService(client *http.Client) *Service {
+// NewService creates instance of User related Services
+func NewService(client *http.Client) (*Service, error) {
 	srv, err := admin.New(client)
 	if err != nil {
-		log.Fatalf("Unable to retrieve directory Client %v", err)
+		return nil, err
 	}
-	return &Service{srv.Users, client}
+	return &Service{srv.Users, client}, nil
 }
 
 // GetEmployees retrieves employees from Gsuite organization.

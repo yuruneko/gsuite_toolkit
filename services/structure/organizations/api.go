@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"google.golang.org/api/admin/directory/v1"
 	"net/http"
-	"log"
 )
 
 // Service provides Organization Units related functionality
@@ -16,12 +15,13 @@ type Service struct {
 	*http.Client
 }
 
-func NewService(client *http.Client) *Service {
+// NewService creates instance of Organization related Services
+func NewService(client *http.Client) (*Service, error) {
 	srv, err := admin.New(client)
 	if err != nil {
-		log.Fatalf("Unable to retrieve directory Client %v", err)
+		return nil, err
 	}
-	return &Service{srv.Orgunits, client}
+	return &Service{srv.Orgunits, client}, nil
 }
 
 // GetOrganizationUnit retrieves specific organization unit
