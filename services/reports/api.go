@@ -49,23 +49,28 @@ func (s *Service) GetUserUsage(key, date, params string) (*admin.UsageReports, e
 // GetNon2StepVerifiedUsers returns emails of users who have not yet enabled 2 step verification.
 // date Must be in ISO 8601 format, yyyy-mm-dd
 // Example: GetNon2StepVerifiedUsers("2017-01-01")
-func (s *Service) GetNon2StepVerifiedUsers(date string) ([]string, error) {
-	var users []string
-
+func (s *Service) GetNon2StepVerifiedUsers(date string) (*users, error) {
 	usageReports, err := s.GetUserUsage("all", date, "accounts:is_2sv_enrolled")
 	if err != nil {
-		return users, err
+		return nil, err
 	}
+
+	users := &users{len(usageReports.UsageReports), make([]string, 0)}
 
 	for _, r := range usageReports.UsageReports {
 		if !r.Parameters[0].BoolValue {
-			users = append(users, r.Entity.UserEmail)
+			users.InsecureUsers = append(users.InsecureUsers, r.Entity.UserEmail)
 		}
 	}
 	return users, nil
 }
 
-// Example:
+// GetLoginActivities reports login activities of all users within organization
 func (s *Service) GetLoginActivities() (*admin.Activities, error) {
 	return s.ActivitiesService.List("all", "login").MaxResults(10).Do()
+}
+
+type users struct {
+	TotalUser     int
+	InsecureUsers []string
 }

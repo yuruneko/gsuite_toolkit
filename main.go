@@ -32,21 +32,24 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	t := time.Now().Add(-time.Duration(2 * time.Hour * 24))
+	t := time.Now().Add(-time.Duration(3 * time.Hour * 24))
 	ts := strings.Split(t.Format(time.RFC3339), "T") // yyyy-mm-dd
 	r, err := s.GetNon2StepVerifiedUsers(ts[0])
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	fmt.Println(len(r))
+	fmt.Println("Total User: ", r.TotalUser)
+	for _, insecure := range r.InsecureUsers {
+		fmt.Println(insecure)
+	}
 
 	//orgUnitService := &organizations.Service{srv.Orgunits}
 	//_, err = orgUnitService.CreateOrganizationUnits("CISO室", []string{"セキュリティ推進グループ", "サービスインフラグループ", "社内インフラグループ", "情報セキュリティ管理部"})
 	//_, err = orgUnitService.GetOrganizationUnit("CISO室/セキュリティ推進グループ")
 	//_, err = orgUnitService.UpdateOrganizationUnit(r, "CISO室")
 	//
-	//payload := constructPayload("/Users/suzuki/Desktop/org_structure.csv")
+	//payload := constructPayload("/users/suzuki/Desktop/org_structure.csv")
 	//fmt.Println(payload)
 	//url := "https://www.googleapis.com/batch"
 	//
