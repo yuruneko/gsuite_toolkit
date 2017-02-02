@@ -52,21 +52,27 @@ func (s *Service) GetUserUsage(key, date, params string) (*admin.UsageReports, e
 // date Must be in ISO 8601 format, yyyy-mm-dd
 // Example: GetNon2StepVerifiedUsers("2017-01-01")
 func (s *Service) GetNon2StepVerifiedUsers() (*users, error) {
-	t := time.Now().Add(-time.Duration(3 * time.Hour * 24))
-	ts := strings.Split(t.Format(time.RFC3339), "T") // yyyy-mm-dd
-	usageReports, err := s.GetUserUsage("all", ts[0], "accounts:is_2sv_enrolled")
-	if err != nil {
-		return nil, err
+	var usageReports *admin.UsageReports
+	var err error
+	max_retry := 10
+
+	for i := 0; i < max_retry; i++ {
+		t := time.Now().Add(-time.Duration(time.Duration(i) * time.Hour * 24))
+		ts := strings.Split(t.Format(time.RFC3339), "T") // yyyy-mm-dd
+		usageReports, err = s.GetUserUsage("all", ts[0], "accounts:is_2sv_enrolled")
+		if err == nil {
+			break
+		}
 	}
 
-	users := &users{len(usageReports.UsageReports), make([]string, 0)}
+	users := &users{len(usageReports.UsageReports), make([]*admin.UsageReport, 0)}
 
 	for _, r := range usageReports.UsageReports {
 		if !r.Parameters[0].BoolValue {
-			users.InsecureUsers = append(users.InsecureUsers, r.Entity.UserEmail)
+			users.InsecureUsers = append(users.InsecureUsers, r)
 		}
 	}
-	return users, nil
+	return users, err
 }
 
 // GetLoginActivities reports login activities of all users within organization
@@ -76,5 +82,5 @@ func (s *Service) GetLoginActivities() (*admin.Activities, error) {
 
 type users struct {
 	TotalUser     int
-	InsecureUsers []string
+	InsecureUsers []*admin.UsageReport
 }

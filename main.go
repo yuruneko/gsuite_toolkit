@@ -13,7 +13,6 @@ import (
 	"os"
 	"strings"
 	"github.com/ken5scal/gsuite_toolkit/services/reports"
-	"time"
 )
 
 const (
@@ -37,9 +36,10 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	fmt.Println("Total User: ", r.TotalUser)
+	fmt.Println("Total Insecure User: ", r.InsecureUsers)
+	fmt.Println("Date: ", r.InsecureUsers[0].Date)
 	for _, insecure := range r.InsecureUsers {
-		fmt.Println(insecure)
+		fmt.Println(insecure.Entity.UserEmail)
 	}
 
 	//orgUnitService := &organizations.Service{srv.Orgunits}
