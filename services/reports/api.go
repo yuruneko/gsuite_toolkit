@@ -3,6 +3,8 @@ package reports
 import (
 	"google.golang.org/api/admin/reports/v1"
 	"net/http"
+	"time"
+	"strings"
 )
 
 // Service provides following functions.
@@ -49,8 +51,10 @@ func (s *Service) GetUserUsage(key, date, params string) (*admin.UsageReports, e
 // GetNon2StepVerifiedUsers returns emails of users who have not yet enabled 2 step verification.
 // date Must be in ISO 8601 format, yyyy-mm-dd
 // Example: GetNon2StepVerifiedUsers("2017-01-01")
-func (s *Service) GetNon2StepVerifiedUsers(date string) (*users, error) {
-	usageReports, err := s.GetUserUsage("all", date, "accounts:is_2sv_enrolled")
+func (s *Service) GetNon2StepVerifiedUsers() (*users, error) {
+	t := time.Now().Add(-time.Duration(3 * time.Hour * 24))
+	ts := strings.Split(t.Format(time.RFC3339), "T") // yyyy-mm-dd
+	usageReports, err := s.GetUserUsage("all", ts[0], "accounts:is_2sv_enrolled")
 	if err != nil {
 		return nil, err
 	}

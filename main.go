@@ -32,9 +32,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	t := time.Now().Add(-time.Duration(3 * time.Hour * 24))
-	ts := strings.Split(t.Format(time.RFC3339), "T") // yyyy-mm-dd
-	r, err := s.GetNon2StepVerifiedUsers(ts[0])
+	r, err := s.GetNon2StepVerifiedUsers()
 	if err != nil {
 		log.Fatalln(err)
 	}
