@@ -42,10 +42,6 @@ func main() {
 		fmt.Println(insecure.Entity.UserEmail)
 	}
 
-	//orgUnitService := &organizations.Service{srv.Orgunits}
-	//_, err = orgUnitService.CreateOrganizationUnits("CISO室", []string{"セキュリティ推進グループ", "サービスインフラグループ", "社内インフラグループ", "情報セキュリティ管理部"})
-	//_, err = orgUnitService.GetOrganizationUnit("CISO室/セキュリティ推進グループ")
-	//_, err = orgUnitService.UpdateOrganizationUnit(r, "CISO室")
 	//
 	//payload := constructPayload("/users/suzuki/Desktop/org_structure.csv")
 	//fmt.Println(payload)

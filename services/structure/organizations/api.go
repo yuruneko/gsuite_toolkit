@@ -26,6 +26,7 @@ func NewService(client *http.Client) (*Service, error) {
 
 // GetOrganizationUnit retrieves specific organization unit
 // EX: GET https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/corp/sales/frontline+sales
+// Example: GetOrganizationUnit("CISO室/セキュリティ推進グループ")
 func (service *Service) GetOrganizationUnit(paths ...string) (*admin.OrgUnit, error) {
 	var completePath []string
 	for _, path := range paths {
@@ -51,6 +52,7 @@ func (service *Service) CreateOrganizationUnit(name, parentOrgUnitPath string) (
 }
 
 // CreateOrganizationUnits creates multiple organization units under same parent Org Unit
+// Example: CreateOrganizationUnits("CISO室", []string{"セキュリティ推進グループ", "サービスインフラグループ", "社内インフラグループ", "情報セキュリティ管理部"})
 func (service *Service) CreateOrganizationUnits(names []string, parentOrgUnitPath string) ([]*admin.OrgUnit, error) {
 	if len(names) < 1 {
 		return nil, errors.New("No Names are defined")
@@ -81,6 +83,7 @@ func (service *Service) CreateOrganizationUnits(names []string, parentOrgUnitPat
 //{
 //  "description": "The BEST sales support team"
 //}
+// Example: UpdateOrganizationUnit(r, "CISO室")
 func (service *Service) UpdateOrganizationUnit(NewOrgUnit *admin.OrgUnit, paths ...string) (*admin.OrgUnit, error) {
 	var path []string
 	for _, p := range paths {
