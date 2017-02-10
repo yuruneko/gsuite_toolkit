@@ -13,7 +13,7 @@ import (
 	"os"
 	"strings"
 	"github.com/ken5scal/gsuite_toolkit/services/reports"
-	"time"
+
 	"github.com/ken5scal/gsuite_toolkit/services/users"
 )
 
@@ -22,6 +22,7 @@ const (
 )
 
 var isChecked = make(map[string]bool)
+var actors  []*report.ActivityActor
 
 func main() {
 	scopes := []string{
@@ -56,30 +57,50 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+
 	for _, user := range users.Users {
 		isChecked[user.PrimaryEmail] = false
+
+		if user.PrimaryEmail == "omura.masakazu@moneyforward.co.jp" {
+			fmt.Println(user.PrimaryEmail)
+			fmt.Println(user.LastLoginTime)
+		}
 	}
 
 	a, err := s.GetLoginActivities()
 	if err != nil {
 		log.Fatalln(err)
 	}
+	//time30DaysAgo := time.Now().Add(-time.Duration(30) * time.Hour * 24)
+	//// activity.Id.Time "2017-02-10T09:50:28.000Z"
+	//layout := "2006-01-02T15:04:05.000Z"
+
+	//fmt.Println(time30DaysAgo)
+	fmt.Println(len(a.Items))
 	for _, activity := range a.Items {
-		if isChecked[activity.Actor.Email] {
+		email := activity.Actor.Email
+		if email == "omura.masakazu@moneyforward.co.jp" {
+			fmt.Println(email)
+		}
+		if isChecked[email] {
 			continue
 		} else {
-			isChecked[activity.Actor.Email] = true
+			isChecked[email] = true
 		}
+		//t, _ := time.Parse(layout, activity.Id.Time)
+		//if t.Before(time30DaysAgo) {
+		//	actors = append(actors, activity.Actor)
+		//	fmt.Print("	")
+		//	fmt.Println(activity.Actor)
+		//}
+	}
 
-		time30DaysAgo := time.Now().Add(-time.Duration(30) * time.Hour * 24)
-		// activity.Id.Time "2017-02-10T09:50:28.000Z"
-		layout := "2006-01-02T15:04:05.000Z"
-		t, _ := time.Parse(layout, activity.Id.Time)
-
-		if t.Before(time30DaysAgo) {
-			fmt.Println("Get the fuck out of here")
+	for key, value := range isChecked {
+		if !value {
+			fmt.Println(key)
 		}
 	}
+
 	//
 	//payload := constructPayload("/users/suzuki/Desktop/org_structure.csv")
 	//fmt.Println(payload)
