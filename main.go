@@ -4,77 +4,152 @@ import (
 	"log"
 
 	"github.com/ken5scal/gsuite_toolkit/client"
-	"github.com/ken5scal/gsuite_toolkit/services/users"
-	"google.golang.org/api/admin/directory/v1"
 
+	"encoding/csv"
 	"fmt"
+	admin "google.golang.org/api/admin/directory/v1"
+	report "google.golang.org/api/admin/reports/v1"
+	"io"
+	"os"
 	"strings"
-	"net/http"
-	"io/ioutil"
+	"github.com/ken5scal/gsuite_toolkit/services/reports"
+
+	"github.com/ken5scal/gsuite_toolkit/services/users"
 )
 
 const (
 	clientSecretFileName = "client_secret.json"
 )
 
+var isChecked = make(map[string]bool)
+var actors  []*report.ActivityActor
+
 func main() {
-	scopes := []string{admin.AdminDirectoryOrgunitScope, admin.AdminDirectoryUserScope}
+	scopes := []string{
+		admin.AdminDirectoryOrgunitScope, admin.AdminDirectoryUserScope,
+		report.AdminReportsAuditReadonlyScope, report.AdminReportsUsageReadonlyScope,
+	}
 	c := client.NewClient(clientSecretFileName, scopes)
-	srv, err := admin.New(c.Client)
+
+	s, err := reports.NewService(c.Client)
 	if err != nil {
-		log.Fatalf("Unable to retrieve directory Client %v", err)
+		log.Fatalln(err)
 	}
-
-	// r, err := srv.Users.List().Customer("my_customer").MaxResults(10). OrderBy("email").Do()
-	userService := &users.Service{srv.Users}
-	//r, err := userService.GetEmployees("my_customer", "email", 500)
-	user, err := userService.GetUser("suzuki.kengo@moneyforward.co.jp")
-	if err != nil {
-		log.Fatalln("Unable to retrieve users in domain.", err)
-	}
-
-	fmt.Println(user.PrimaryEmail)
-
-	//_, err = userService.ChangeOrgUnit(user, "CISO室/セキュリティ推進グループ")
-	//if err != nil {
-	//	log.Fatalln("Failed Changing user's Organizaion unit.", err)
-	//}
-
-	//parentName := "CISO室"
-	//unitNames := []string{"セキュリティ推進グループ", "サービスインフラグループ", "社内インフラグループ", "情報セキュリティ管理部"}
-	//orgUnitService := &organizations.Service{srv.Orgunits}
-	//_, err = orgUnitService.CreateOrganizationUnits(unitNames, parentName)
+	//
+	//r, err := s.GetNon2StepVerifiedUsers()
 	//if err != nil {
 	//	log.Fatalln(err)
 	//}
+	//
+	//fmt.Println("Total User: ", r.TotalUser)
+	//fmt.Println("Total Insecure User: ", len(r.InsecureUsers))
+	//fmt.Println("Date: ", r.InsecureUsers[0].Date)
+	//for _, insecure := range r.InsecureUsers {
+	//	fmt.Println(insecure.Entity.UserEmail)
+	//}
+
+	userService, err := users.NewService(c.Client)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	users, err := userService.GetAllUsersInDomain("moneyforward.co.jp", 500)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	for _, user := range users.Users {
+		isChecked[user.PrimaryEmail] = false
+
+		if user.PrimaryEmail == "omura.masakazu@moneyforward.co.jp" {
+			fmt.Println(user.PrimaryEmail)
+			fmt.Println(user.LastLoginTime)
+		}
+	}
+
+	a, err := s.GetLoginActivities()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	//time30DaysAgo := time.Now().Add(-time.Duration(30) * time.Hour * 24)
+	//// activity.Id.Time "2017-02-10T09:50:28.000Z"
+	//layout := "2006-01-02T15:04:05.000Z"
+
+	//fmt.Println(time30DaysAgo)
+	fmt.Println(len(a.Items))
+	for _, activity := range a.Items {
+		email := activity.Actor.Email
+		if email == "omura.masakazu@moneyforward.co.jp" {
+			fmt.Println(email)
+		}
+		if isChecked[email] {
+			continue
+		} else {
+			isChecked[email] = true
+		}
+		//t, _ := time.Parse(layout, activity.Id.Time)
+		//if t.Before(time30DaysAgo) {
+		//	actors = append(actors, activity.Actor)
+		//	fmt.Print("	")
+		//	fmt.Println(activity.Actor)
+		//}
+	}
+
+	for key, value := range isChecked {
+		if !value {
+			fmt.Println(key)
+		}
+	}
 
 	//
-	//fmt.Println(r)
-	//r, err := orgUnitService.GetOrganizationUnit("dept_ciso/セキュリティ推進グループ")
-	//r, err := orgUnitService.GetOrganizationUnit("dept_ciso")
+	//payload := constructPayload("/users/suzuki/Desktop/org_structure.csv")
+	//fmt.Println(payload)
+	//url := "https://www.googleapis.com/batch"
+	//
+	//req, _ := http.NewRequest("POST", url, strings.NewReader(payload))
+	//req.Header.Add("content-type", "multipart/mixed; boundary=batch_0123456789")
+	//req.Header.Add("authorization", "Bearer someToken")
+	//res, _ := c.Do(req)
+	//
+	//defer res.Body.Close()
+	//_, err = ioutil.ReadAll(res.Body)
 	//if err != nil {
-	//	log.Fatalln("Failed creating New Org Unit.", err)
+	//	log.Fatalln(err)
 	//}
+}
 
-	//r.Name = "CISO室"
-	//r, err = orgUnitService.UpdateOrganizationUnit(r, "dept_ciso")
-	//if err != nil {
-	//	log.Fatalln("Failed Changing Org Unit.", err)
-	//}
+func constructPayload(filePath string) string {
+	var reader *csv.Reader
+	var row []string
+	var payload string
+	boundary := "batch_0123456789"
+	header := "--" + boundary + "\nContent-Type: application/http\n\n"
 
-	url := "https://www.googleapis.com/batch"
+	csv_file, err := os.Open(filePath)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer csv_file.Close()
+	reader = csv.NewReader(csv_file)
 
-	payload := strings.NewReader("--batch_0123456789\nContent-Type: application/http\nContent-ID: <item1:suzuki.kengo@moneyforward.co.jp>\n\nGET https://www.googleapis.com/admin/directory/v1/users/suzuki.kengo@moneyforward.co.jp\n\n--batch_0123456789\nContent-Type: application/http\nContent-ID: <item2:suzuki.kengo@moneyforward.co.jp>\n\nGET https://www.googleapis.com/admin/directory/v1/users/ichikawa.takashi@moneyforward.co.jp\n\n--batch_0123456789--")
+	for {
+		row, err = reader.Read()
+		if err == io.EOF {
+			return payload + "--batch_0123456789--"
+		}
 
-	req, _ := http.NewRequest("POST", url, payload)
+		if strings.Contains(row[5], "@moneyforward.co.jp") && !strings.Contains(payload, row[5]) {
+			payload = payload + header + RequestLine("PUT", row[5]) + "\n\n"
+		}
+	}
+}
 
-	req.Header.Add("content-type", "multipart/mixed; boundary=batch_0123456789")
-	req.Header.Add("authorization", "Bearer someToken")
-	res, _ := c.Do(req)
+func RequestLine(method string, email string) string {
+	//return "GET https://www.googleapis.com/admin/directory/v1/users/" +  email
+	return method + " " + "https://www.googleapis.com/admin/directory/v1/users/" + email + "\n" +
+		"Content-Type: application/json\n\n" + Body()
+}
 
-	defer res.Body.Close()
-	body, _ := ioutil.ReadAll(res.Body)
-
-	fmt.Println(res)
-	fmt.Println(string(body))
+func Body() string {
+	return "{\n" + "\"orgUnitPath\": \"/社員・委託社員・派遣社員・アルバイト\"\n" + "}\n"
 }

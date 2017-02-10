@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"google.golang.org/api/admin/directory/v1"
+	"net/http"
 )
 
 // Service provides Organization Units related functionality
@@ -11,16 +12,27 @@ import (
 // https://developers.google.com/admin-sdk/directory/v1/guides/manage-org-units#create_ou
 type Service struct {
 	*admin.OrgunitsService
+	*http.Client
+}
+
+// NewService creates instance of Organization related Services
+func NewService(client *http.Client) (*Service, error) {
+	srv, err := admin.New(client)
+	if err != nil {
+		return nil, err
+	}
+	return &Service{srv.Orgunits, client}, nil
 }
 
 // GetOrganizationUnit retrieves specific organization unit
 // EX: GET https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/corp/sales/frontline+sales
+// Example: GetOrganizationUnit("CISO室/セキュリティ推進グループ")
 func (service *Service) GetOrganizationUnit(paths ...string) (*admin.OrgUnit, error) {
 	var completePath []string
 	for _, path := range paths {
 		completePath = append(completePath, path)
 	}
-	return service.Get("my_customer", completePath).Do()
+	return service.OrgunitsService.Get("my_customer", completePath).Do()
 }
 
 // GetAllOrganizationUnits fetch all sub-organization units
@@ -40,6 +52,7 @@ func (service *Service) CreateOrganizationUnit(name, parentOrgUnitPath string) (
 }
 
 // CreateOrganizationUnits creates multiple organization units under same parent Org Unit
+// Example: CreateOrganizationUnits("CISO室", []string{"セキュリティ推進グループ", "サービスインフラグループ", "社内インフラグループ", "情報セキュリティ管理部"})
 func (service *Service) CreateOrganizationUnits(names []string, parentOrgUnitPath string) ([]*admin.OrgUnit, error) {
 	if len(names) < 1 {
 		return nil, errors.New("No Names are defined")
@@ -70,6 +83,7 @@ func (service *Service) CreateOrganizationUnits(names []string, parentOrgUnitPat
 //{
 //  "description": "The BEST sales support team"
 //}
+// Example: UpdateOrganizationUnit(r, "CISO室")
 func (service *Service) UpdateOrganizationUnit(NewOrgUnit *admin.OrgUnit, paths ...string) (*admin.OrgUnit, error) {
 	var path []string
 	for _, p := range paths {

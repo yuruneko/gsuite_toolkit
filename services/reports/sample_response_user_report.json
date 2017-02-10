@@ -1,0 +1,67 @@
+// https://developers.google.com/admin-sdk/reports/v1/guides/manage-usage-users
+{
+  "kind": "reports#usageReports",
+  "warnings": [
+    {
+      "code": warning machine-readable code,
+      "message": warning human-readable message,
+      "data": [
+        {
+          "key": key for key-value pair that gives detailsed warning information,
+          "value": value for key-value pair giving detailed warning information
+        }
+      ]
+    }
+  ],
+  "nextPageToken": "N:NNN:NNN:N:C03az79cb",
+  "usageReports": [
+    {
+      "kind": "usageReport",
+      "date": "2013-03-03",
+      "entity": {
+        "type": "USER",
+        "customerId": "C03az79cb",
+        "userEmail": "liz@example.com",
+        "profileId": "user's unique G Suite ID"
+      },
+      "parameters": [
+        {
+          "name": "accounts:is_disabled",
+          "boolValue": false
+        },
+        {
+          "name": "accounts:disabled_reason",
+          "stringValue": "reason description"
+        },
+        {
+          "name": "accounts:first_name",
+          "stringValue": "Liz"
+        },
+        {
+          "name": "accounts:is_2sv_enforced",
+          "boolValue": false
+        },
+        {
+          "name": "accounts:is_2sv_enrolled",
+          "boolValue": false
+        },
+        {
+          "name": "accounts:last_name",
+          "stringValue": "Smith"
+        },
+        {
+          "name": "accounts:creation_time",
+          "datetimeValue": "2010-10-28T10:26:35.000Z"
+        },
+        {
+          "name": "accounts:last_login_time",
+          "datetimeValue": "1970-01-01T00:00:00.000Z"
+        },
+        {
+          "name": "accounts:last_sso_time",
+          "datetimeValue": "1970-01-01T00:00:00.000Z"
+        }
+      ]
+    }
+  ]
+}
