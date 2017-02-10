@@ -30,21 +30,6 @@ func main() {
 	}
 	c := client.NewClient(clientSecretFileName, scopes)
 
-	userService, err := users.NewService(c.Client)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	users, err := userService.GetAllUsersInDomain("moneyforward.co.jp", 500)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	for _, user := range users.Users {
-		isChecked[user.PrimaryEmail] = false
-	}
-
-	fmt.Println(isChecked)
-
 	s, err := reports.NewService(c.Client)
 	if err != nil {
 		log.Fatalln(err)
@@ -62,27 +47,37 @@ func main() {
 	//	fmt.Println(insecure.Entity.UserEmail)
 	//}
 
+	userService, err := users.NewService(c.Client)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
+	users, err := userService.GetAllUsersInDomain("moneyforward.co.jp", 500)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	for _, user := range users.Users {
+		isChecked[user.PrimaryEmail] = false
+	}
 
 	a, err := s.GetLoginActivities()
 	if err != nil {
 		log.Fatalln(err)
 	}
 	for _, activity := range a.Items {
-		fmt.Println(activity.Actor.Email)
-		t, err := time.Parse(time.RFC3339Nano, activity.Id.Time)
-		if err != nil {
-			fmt.Println("Unable to parse login time.")
-			// Set time to zero.
-			t = time.Time{}
+		if isChecked[activity.Actor.Email] {
+			continue
+		} else {
+			isChecked[activity.Actor.Email] = true
 		}
-		fmt.Printf("%s: %s %s\n", t.Format(time.RFC822), activity.Actor.Email,
-			activity.Events[0].Name)
 
-		for _, event := range activity.Events {
-			fmt.Println("	" + event.Name)
-			fmt.Println("	" + event.Type)
-			fmt.Println(event.Parameters)
+		time30DaysAgo := time.Now().Add(-time.Duration(30) * time.Hour * 24)
+		// activity.Id.Time "2017-02-10T09:50:28.000Z"
+		layout := "2006-01-02T15:04:05.000Z"
+		t, _ := time.Parse(layout, activity.Id.Time)
+
+		if t.Before(time30DaysAgo) {
+			fmt.Println("Get the fuck out of here")
 		}
 	}
 	//

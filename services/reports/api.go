@@ -77,7 +77,7 @@ func (s *Service) GetNon2StepVerifiedUsers() (*users, error) {
 
 // GetLoginActivities reports login activities of all users within organization
 func (s *Service) GetLoginActivities() (*admin.Activities, error) {
-	return s.ActivitiesService.List("all", "login").MaxResults(10).Do()
+	return s.ActivitiesService.List("all", "login").EventName("login_success").MaxResults(10).Do()
 }
 
 func (s *Service) GetUsersNotLoggedIn() {
