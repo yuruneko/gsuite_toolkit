@@ -13,11 +13,15 @@ import (
 	"os"
 	"strings"
 	"github.com/ken5scal/gsuite_toolkit/services/reports"
+	"time"
+	"github.com/ken5scal/gsuite_toolkit/services/users"
 )
 
 const (
 	clientSecretFileName = "client_secret.json"
 )
+
+var isChecked = make(map[string]bool)
 
 func main() {
 	scopes := []string{
@@ -26,23 +30,61 @@ func main() {
 	}
 	c := client.NewClient(clientSecretFileName, scopes)
 
+	userService, err := users.NewService(c.Client)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	users, err := userService.GetAllUsersInDomain("moneyforward.co.jp", 500)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	for _, user := range users.Users {
+		isChecked[user.PrimaryEmail] = false
+	}
+
+	fmt.Println(isChecked)
+
 	s, err := reports.NewService(c.Client)
 	if err != nil {
 		log.Fatalln(err)
 	}
+	//
+	//r, err := s.GetNon2StepVerifiedUsers()
+	//if err != nil {
+	//	log.Fatalln(err)
+	//}
+	//
+	//fmt.Println("Total User: ", r.TotalUser)
+	//fmt.Println("Total Insecure User: ", len(r.InsecureUsers))
+	//fmt.Println("Date: ", r.InsecureUsers[0].Date)
+	//for _, insecure := range r.InsecureUsers {
+	//	fmt.Println(insecure.Entity.UserEmail)
+	//}
 
-	r, err := s.GetNon2StepVerifiedUsers()
+
+
+	a, err := s.GetLoginActivities()
 	if err != nil {
 		log.Fatalln(err)
 	}
+	for _, activity := range a.Items {
+		fmt.Println(activity.Actor.Email)
+		t, err := time.Parse(time.RFC3339Nano, activity.Id.Time)
+		if err != nil {
+			fmt.Println("Unable to parse login time.")
+			// Set time to zero.
+			t = time.Time{}
+		}
+		fmt.Printf("%s: %s %s\n", t.Format(time.RFC822), activity.Actor.Email,
+			activity.Events[0].Name)
 
-	fmt.Println("Total User: ", r.TotalUser)
-	fmt.Println("Total Insecure User: ", len(r.InsecureUsers))
-	fmt.Println("Date: ", r.InsecureUsers[0].Date)
-	for _, insecure := range r.InsecureUsers {
-		fmt.Println(insecure.Entity.UserEmail)
+		for _, event := range activity.Events {
+			fmt.Println("	" + event.Name)
+			fmt.Println("	" + event.Type)
+			fmt.Println(event.Parameters)
+		}
 	}
-
 	//
 	//payload := constructPayload("/users/suzuki/Desktop/org_structure.csv")
 	//fmt.Println(payload)

@@ -80,6 +80,10 @@ func (s *Service) GetLoginActivities() (*admin.Activities, error) {
 	return s.ActivitiesService.List("all", "login").MaxResults(10).Do()
 }
 
+func (s *Service) GetUsersNotLoggedIn() {
+
+}
+
 type users struct {
 	TotalUser     int
 	InsecureUsers []*admin.UsageReport

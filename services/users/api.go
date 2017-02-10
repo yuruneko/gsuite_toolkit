@@ -36,11 +36,12 @@ func (service *Service) GetEmployees(customer, key string, max int64) (*admin.Us
 
 // GetAllUsersInDomain retrieves all users in domain.
 // GET https://www.googleapis.com/admin/directory/v1/users?domain=example.com&maxResults=2
-func (service *Service) GetAllUsersInDomain(domain, key string, max int64) (*admin.Users, error) {
+// Example: GetAllUsersInDomain("hoge.co.jp", "[email, familyname, givenname]", 500)
+func (service *Service) GetAllUsersInDomain(domain string, max int64) (*admin.Users, error) {
 	return service.UsersService.
 		List().
 		Domain(domain).
-		OrderBy(key).
+		OrderBy("email").
 		MaxResults(max).
 		Do()
 }
