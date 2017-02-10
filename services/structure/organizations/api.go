@@ -32,7 +32,7 @@ func (service *Service) GetOrganizationUnit(paths ...string) (*admin.OrgUnit, er
 	for _, path := range paths {
 		completePath = append(completePath, path)
 	}
-	return service.Get("my_customer", completePath).Do()
+	return service.OrgunitsService.Get("my_customer", completePath).Do()
 }
 
 // GetAllOrganizationUnits fetch all sub-organization units

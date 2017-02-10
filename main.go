@@ -36,7 +36,8 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	fmt.Println("Total Insecure User: ", r.InsecureUsers)
+	fmt.Println("Total User: ", r.TotalUser)
+	fmt.Println("Total Insecure User: ", len(r.InsecureUsers))
 	fmt.Println("Date: ", r.InsecureUsers[0].Date)
 	for _, insecure := range r.InsecureUsers {
 		fmt.Println(insecure.Entity.UserEmail)
