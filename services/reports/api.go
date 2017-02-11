@@ -151,7 +151,6 @@ func containIP(ips []string, ip string) bool {
 	return ok
 }
 
-
 type users struct {
 	TotalUser     int
 	Users []*admin.UsageReport
