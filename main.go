@@ -12,7 +12,8 @@ import (
 	"io"
 	"os"
 	"strings"
-	"github.com/ken5scal/gsuite_toolkit/services/reports"
+	"github.com/ken5scal/gsuite_toolkit/services/users"
+	"time"
 )
 
 const (
@@ -25,30 +26,44 @@ func main() {
 		report.AdminReportsAuditReadonlyScope, report.AdminReportsUsageReadonlyScope,
 	}
 	c := client.NewClient(clientSecretFileName, scopes)
-
-	s, err := reports.NewService(c.Client)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	loginData, _ := s.GetEmployeesNotLogInFromOfficeIP()
-
-	for key, value := range loginData {
-		if !value.OfficeLogin {
-			fmt.Println(key)
-			fmt.Print("     IP: ")
-			fmt.Println(value.LoginIPs)
+	u, _ := users.NewService(c.Client)
+	users, _ := u.GetAllUsersInDomain("moneyforward.co.jp", 500)
+	time30DaysAgo := time.Now().Add(-time.Duration(30) * time.Hour * 24)
+	layout := "2006-01-02T15:04:05.000Z"
+	for _, user := range users.Users {
+		lastLogin, err := time.Parse(layout, user.LastLoginTime)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		if time30DaysAgo.After(lastLogin) {
+			fmt.Println(user.PrimaryEmail)
 		}
 	}
 
-	users, err := s.GetNon2StepVerifiedUsers()
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	for _, user := range users.Users {
-		fmt.Println(user.Entity.UserEmail)
-	}
+	//
+	//s, err := reports.NewService(c.Client)
+	//if err != nil {
+	//	log.Fatalln(err)
+	//}
+	//
+	//loginData, _ := s.GetEmployeesNotLogInFromOfficeIP()
+	//
+	//for key, value := range loginData {
+	//	if !value.OfficeLogin {
+	//		fmt.Println(key)
+	//		fmt.Print("     IP: ")
+	//		fmt.Println(value.LoginIPs)
+	//	}
+	//}
+	//
+	//users, err := s.GetNon2StepVerifiedUsers()
+	//if err != nil {
+	//	log.Fatalln(err)
+	//}
+	//
+	//for _, user := range users.Users {
+	//	fmt.Println(user.Entity.UserEmail)
+	//}
 
 	//
 	//payload := constructPayload("/users/suzuki/Desktop/org_structure.csv")
