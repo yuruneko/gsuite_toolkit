@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 	"strings"
+	"fmt"
 )
 
 // Service provides following functions.
@@ -77,11 +78,14 @@ func (s *Service) GetNon2StepVerifiedUsers() (*users, error) {
 
 // GetLoginActivities reports login activities of all users within organization
 func (s *Service) GetLoginActivities() (*admin.Activities, error) {
-	//time30DaysAgo := time.Now().Add(-time.Duration(30) * time.Hour * 24)
+	time30DaysAgo := time.Now().Add(-time.Duration(30) * time.Hour * 24)
+	layout := "2006-01-02T15:04:05.000Z"
+	t := time30DaysAgo.Format(layout)
 	return s.ActivitiesService.
 		List("all", "login").
 		EventName("login_success").
-		StartTime("2017-01-28T20:35:28.000Z").
+		//StartTime("2017-01-28T20:35:28.000Z").
+		StartTime(t).
 		Do()
 }
 

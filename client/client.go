@@ -40,6 +40,8 @@ func NewClient(fileName string, scopes []string) *Client {
 		Client: config.Client(context.Background(), token),
 	}
 
+
+
 	return client
 }
 

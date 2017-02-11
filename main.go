@@ -12,9 +12,9 @@ import (
 	"io"
 	"os"
 	"strings"
-	"github.com/ken5scal/gsuite_toolkit/services/reports"
-
 	"github.com/ken5scal/gsuite_toolkit/services/users"
+	"time"
+	"github.com/ken5scal/gsuite_toolkit/services/reports"
 )
 
 const (
@@ -23,6 +23,9 @@ const (
 
 var isChecked = make(map[string]bool)
 var actors  []*report.ActivityActor
+var officeIPs = [...]string{"124.32.248.42", "210.130.170.193", "210.138.23.111", "210.224.77.186", "118.243.201.33", "122.220.198.115"}
+
+//type
 
 func main() {
 	scopes := []string{
@@ -30,23 +33,6 @@ func main() {
 		report.AdminReportsAuditReadonlyScope, report.AdminReportsUsageReadonlyScope,
 	}
 	c := client.NewClient(clientSecretFileName, scopes)
-
-	s, err := reports.NewService(c.Client)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	//
-	//r, err := s.GetNon2StepVerifiedUsers()
-	//if err != nil {
-	//	log.Fatalln(err)
-	//}
-	//
-	//fmt.Println("Total User: ", r.TotalUser)
-	//fmt.Println("Total Insecure User: ", len(r.InsecureUsers))
-	//fmt.Println("Date: ", r.InsecureUsers[0].Date)
-	//for _, insecure := range r.InsecureUsers {
-	//	fmt.Println(insecure.Entity.UserEmail)
-	//}
 
 	userService, err := users.NewService(c.Client)
 	if err != nil {
@@ -58,25 +44,29 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	time30DaysAgo := time.Now().Add(-time.Duration(10) * time.Hour * 24)
+
 	for _, user := range users.Users {
 		isChecked[user.PrimaryEmail] = false
 
-		if user.PrimaryEmail == "omura.masakazu@moneyforward.co.jp" {
+		layout := "2006-01-02T15:04:05.000Z"
+		t, _ := time.Parse(layout, user.LastLoginTime)
+		if t.Before(time30DaysAgo) {
 			fmt.Println(user.PrimaryEmail)
-			fmt.Println(user.LastLoginTime)
 		}
+	}
+
+	s, err := reports.NewService(c.Client)
+	if err != nil {
+		log.Fatalln(err)
 	}
 
 	a, err := s.GetLoginActivities()
 	if err != nil {
 		log.Fatalln(err)
 	}
-	//time30DaysAgo := time.Now().Add(-time.Duration(30) * time.Hour * 24)
-	//// activity.Id.Time "2017-02-10T09:50:28.000Z"
-	//layout := "2006-01-02T15:04:05.000Z"
 
-	//fmt.Println(time30DaysAgo)
-	fmt.Println(len(a.Items))
+	// activity.Id.Time "2017-02-10T09:50:28.000Z"
 	for _, activity := range a.Items {
 		email := activity.Actor.Email
 		if email == "omura.masakazu@moneyforward.co.jp" {
@@ -93,13 +83,22 @@ func main() {
 		//	fmt.Print("	")
 		//	fmt.Println(activity.Actor)
 		//}
-	}
-
-	for key, value := range isChecked {
-		if !value {
-			fmt.Println(key)
+		if activity.IpAddress != "124.32.248.42" &&
+		activity.IpAddress != "210.130.170.193" &&
+		activity.IpAddress != "210.138.23.111" &&
+		activity.IpAddress != "210.224.77.186" &&
+		activity.IpAddress != "118.243.201.33" &&
+		activity.IpAddress != "122.220.198.115" {
+			fmt.Println("Suspicious: " + activity.Actor.Email)
+			fmt.Println("Supicious IP: " + activity.IpAddress)
 		}
 	}
+	//
+	//for key, value := range isChecked {
+	//	if !value {
+	//		fmt.Println(key)
+	//	}
+	//}
 
 	//
 	//payload := constructPayload("/users/suzuki/Desktop/org_structure.csv")
