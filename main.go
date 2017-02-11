@@ -72,33 +72,19 @@ func main() {
 		if email == "omura.masakazu@moneyforward.co.jp" {
 			fmt.Println(email)
 		}
-		if isChecked[email] {
-			continue
+
+		if value, ok := Hoges[email]; !ok {
+			Hoges[email] = &Hoge{email, false, []string{activity.IpAddress}}
 		} else {
-			isChecked[email] = true
-		}
-		//t, _ := time.Parse(layout, activity.Id.Time)
-		//if t.Before(time30DaysAgo) {
-		//	actors = append(actors, activity.Actor)
-		//	fmt.Print("	")
-		//	fmt.Println(activity.Actor)
-		//}
-		if activity.IpAddress != "124.32.248.42" &&
-		activity.IpAddress != "210.130.170.193" &&
-		activity.IpAddress != "210.138.23.111" &&
-		activity.IpAddress != "210.224.77.186" &&
-		activity.IpAddress != "118.243.201.33" &&
-		activity.IpAddress != "122.220.198.115" {
-			fmt.Println("Suspicious: " + activity.Actor.Email)
-			fmt.Println("Supicious IP: " + activity.IpAddress)
+			value.outSideIPs = append(value.outSideIPs, activity.IpAddress)
 		}
 	}
-	//
-	//for key, value := range isChecked {
-	//	if !value {
-	//		fmt.Println(key)
-	//	}
-	//}
+
+	for key, value := range Hoges  {
+		fmt.Println(key)
+		fmt.Print("     IP: ")
+		fmt.Println(value.outSideIPs)
+	}
 
 	//
 	//payload := constructPayload("/users/suzuki/Desktop/org_structure.csv")

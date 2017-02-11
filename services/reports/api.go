@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"time"
 	"strings"
-	"fmt"
 )
 
 // Service provides following functions.
@@ -84,7 +83,6 @@ func (s *Service) GetLoginActivities() (*admin.Activities, error) {
 	return s.ActivitiesService.
 		List("all", "login").
 		EventName("login_success").
-		//StartTime("2017-01-28T20:35:28.000Z").
 		StartTime(t).
 		Do()
 }
