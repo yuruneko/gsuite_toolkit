@@ -69,29 +69,69 @@ func (s *Service) GetNon2StepVerifiedUsers() (*users, error) {
 
 	for _, r := range usageReports.UsageReports {
 		if !r.Parameters[0].BoolValue {
-			users.InsecureUsers = append(users.InsecureUsers, r)
+			users.Users = append(users.Users, r)
 		}
 	}
 	return users, err
 }
 
 // GetLoginActivities reports login activities of all users within organization
-func (s *Service) GetLoginActivities() (*admin.Activities, error) {
+func (s *Service) GetLoginActivities() ([]*admin.Activity, error) {
 	time30DaysAgo := time.Now().Add(-time.Duration(30) * time.Hour * 24)
 	layout := "2006-01-02T15:04:05.000Z"
-	t := time30DaysAgo.Format(layout)
-	return s.ActivitiesService.
+
+	call := s.ActivitiesService.
 		List("all", "login").
 		EventName("login_success").
-		StartTime(t).
-		Do()
+		StartTime(time30DaysAgo.Format(layout)).
+		EndTime("2017-02-05T20:35:28.000Z")
+
+	firstIter := true
+	token := "hogehoge"
+	var hoges []*admin.Activity
+	for token != "" {
+		if !firstIter {
+			call.PageToken(token)
+		}
+		firstIter = false
+		activities, err := call.Do()
+		if err != nil {
+			return nil, err
+		}
+		hoges = append(hoges, activities.Items...)
+		token = activities.NextPageToken
+	}
+
+	return hoges, nil
+
+	//if err != nil {
+	//	fmt.Println(err)
+	//}
+
+	//fmt.Println(activities)
+	//
+	//if activities.NextPageToken != "" {
+	//	activities, err = s.ActivitiesService.
+	//		List("all", "login").
+	//		EventName("login_success").
+	//	//StartTime(t).
+	//		StartTime("2017-01-20T20:35:28.000Z").
+	//		EndTime("2017-02-05T20:35:28.000Z").
+	//		PageToken(activities.NextPageToken).
+	//		Do()
+	//}
+	//
+	//fmt.Println(activities)
+	//
+	//return activities, err
 }
 
 func (s *Service) GetUsersNotLoggedIn() {
 
 }
 
+
 type users struct {
 	TotalUser     int
-	InsecureUsers []*admin.UsageReport
+	Users []*admin.UsageReport
 }
