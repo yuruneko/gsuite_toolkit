@@ -111,6 +111,8 @@ type LoginInformation struct {
 	LoginIPs    []string
 }
 
+// GetEmployeesNotLogInFromOfficeIP
+// Main purpose is to detect employees who have not logged in from office for 30days
 func (s *Service) GetEmployeesNotLogInFromOfficeIP() (map[string]*LoginInformation, error) {
 	data := make(map[string]*LoginInformation)
 	officeIPs := []string{"124.32.248.42", "210.130.170.193", "210.138.23.111", "210.224.77.186", "118.243.201.33", "122.220.198.115"}
@@ -125,11 +127,11 @@ func (s *Service) GetEmployeesNotLogInFromOfficeIP() (map[string]*LoginInformati
 
 		if value, ok := data[email]; ok {
 			if !value.OfficeLogin {
+				// If an user has logged in from not verified IP so far
+				// then check if new IP is the one from office or not.
 				value.OfficeLogin = containIP(officeIPs, ip)
 			}
-			if !containIP(value.LoginIPs, ip) {
-				value.LoginIPs = append(value.LoginIPs, ip)
-			}
+			value.LoginIPs = append(value.LoginIPs, ip)
 		} else {
 			data[email] = &LoginInformation{
 				email,

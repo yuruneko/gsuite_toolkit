@@ -41,6 +41,14 @@ func main() {
 		}
 	}
 
+	users, err := s.GetNon2StepVerifiedUsers()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	for _, user := range users.Users {
+		fmt.Println(user.Entity.UserEmail)
+	}
 
 	//
 	//payload := constructPayload("/users/suzuki/Desktop/org_structure.csv")
