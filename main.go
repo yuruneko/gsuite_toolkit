@@ -13,6 +13,7 @@ import (
 	"os"
 	"strings"
 	"github.com/ken5scal/gsuite_toolkit/services/users"
+	"github.com/ken5scal/gsuite_toolkit/services/reports"
 )
 
 const (
@@ -33,33 +34,33 @@ func main() {
 		fmt.Println(user.PrimaryEmail)
 	}
 
-	//
-	//s, err := reports.NewService(c.Client)
-	//if err != nil {
-	//	log.Fatalln(err)
-	//}
-	//
-	//loginData, _ := s.GetEmployeesNotLogInFromOfficeIP()
-	//
-	//for key, value := range loginData {
-	//	if !value.OfficeLogin {
-	//		fmt.Println(key)
-	//		fmt.Print("     IP: ")
-	//		fmt.Println(value.LoginIPs)
-	//	}
-	//}
-	//
-	//users, err := s.GetNon2StepVerifiedUsers()
-	//if err != nil {
-	//	log.Fatalln(err)
-	//}
-	//
-	//for _, user := range users.Users {
-	//	fmt.Println(user.Entity.UserEmail)
-	//}
+
+	s, err := reports.NewService(c.Client)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	loginData, _ := s.GetEmployeesNotLogInFromOfficeIP()
+
+	for key, value := range loginData {
+		if !value.OfficeLogin {
+			fmt.Println(key)
+			fmt.Print("     IP: ")
+			fmt.Println(value.LoginIPs)
+		}
+	}
+
+	non2SVuser, err := s.GetNon2StepVerifiedUsers()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	for _, user := range non2SVuser.Users {
+		fmt.Println(user.Entity.UserEmail)
+	}
 
 	//
-	//payload := constructPayload("/users/suzuki/Desktop/org_structure.csv")
+	//payload := constructPayload("/non2SVuser/suzuki/Desktop/org_structure.csv")
 	//fmt.Println(payload)
 	//url := "https://www.googleapis.com/batch"
 	//

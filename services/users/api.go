@@ -4,7 +4,6 @@ import (
 	"google.golang.org/api/admin/directory/v1"
 	"net/http"
 	"time"
-	"fmt"
 )
 
 // Service provides User related administration Task
