@@ -83,26 +83,26 @@ func (s *Service) GetLoginActivities() ([]*admin.Activity, error) {
 	call := s.ActivitiesService.
 		List("all", "login").
 		EventName("login_success").
-		StartTime(time30DaysAgo.Format(layout)).
-		EndTime("2017-02-05T20:35:28.000Z")
+		StartTime(time30DaysAgo.Format(layout))
+		//EndTime("2017-02-05T20:35:28.000Z")
 
-	firstIter := true
-	token := "hogehoge"
-	var hoges []*admin.Activity
+	firstIteration := true
+	token := "justrandomtoken"
+	var activityList []*admin.Activity
 	for token != "" {
-		if !firstIter {
+		if !firstIteration {
 			call.PageToken(token)
 		}
-		firstIter = false
+		firstIteration = false
 		activities, err := call.Do()
 		if err != nil {
 			return nil, err
 		}
-		hoges = append(hoges, activities.Items...)
+		activityList = append(activityList, activities.Items...)
 		token = activities.NextPageToken
 	}
 
-	return hoges, nil
+	return activityList, nil
 
 	//if err != nil {
 	//	fmt.Println(err)
