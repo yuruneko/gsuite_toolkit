@@ -13,7 +13,6 @@ import (
 	"os"
 	"strings"
 	"github.com/ken5scal/gsuite_toolkit/services/users"
-	"time"
 )
 
 const (
@@ -26,18 +25,12 @@ func main() {
 		report.AdminReportsAuditReadonlyScope, report.AdminReportsUsageReadonlyScope,
 	}
 	c := client.NewClient(clientSecretFileName, scopes)
-	u, _ := users.NewService(c.Client)
-	users, _ := u.GetAllUsersInDomain("moneyforward.co.jp", 500)
-	time30DaysAgo := time.Now().Add(-time.Duration(30) * time.Hour * 24)
-	layout := "2006-01-02T15:04:05.000Z"
-	for _, user := range users.Users {
-		lastLogin, err := time.Parse(layout, user.LastLoginTime)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		if time30DaysAgo.After(lastLogin) {
-			fmt.Println(user.PrimaryEmail)
-		}
+	goneUsers, err := users.GetUsersWhoHasNotLoggedInFor30Days(c.Client)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	for _, user := range goneUsers {
+		fmt.Println(user.PrimaryEmail)
 	}
 
 	//

@@ -3,6 +3,8 @@ package users
 import (
 	"google.golang.org/api/admin/directory/v1"
 	"net/http"
+	"time"
+	"fmt"
 )
 
 // Service provides User related administration Task
@@ -59,4 +61,31 @@ func (service *Service) GetUser(key string) (*admin.User, error) {
 func (service *Service) ChangeOrgUnit(user *admin.User, unit string) (*admin.User, error) {
 	user.OrgUnitPath = "/" + unit
 	return service.UsersService.Update(user.PrimaryEmail, user).Do()
+}
+
+func GetUsersWhoHasNotLoggedInFor30Days(c *http.Client) ([]*admin.User, error) {
+	u, err := NewService(c)
+	if err != nil {
+		return nil, err
+	}
+
+	users, err := u.GetAllUsersInDomain("moneyforward.co.jp", 500)
+	if err != nil {
+		return nil, err
+	}
+
+	time30DaysAgo := time.Now().Add(-time.Duration(30) * time.Hour * 24)
+
+	var goneUsers []*admin.User
+	for _, user := range users.Users {
+		lastLogin, err := time.Parse("2006-01-02T15:04:05.000Z", user.LastLoginTime)
+		if err != nil {
+			return nil, err
+		}
+		if time30DaysAgo.After(lastLogin) {
+			goneUsers = append(goneUsers, user)
+		}
+	}
+
+	return goneUsers, nil
 }
