@@ -19,25 +19,6 @@ const (
 	clientSecretFileName = "client_secret.json"
 )
 
-//type Hoges []*LoginInformation
-//func (h Hoges) containHoge(email string) bool {
-//	set := make(map[string]struct{}, len(h))
-//	for _, s := range h {
-//		set[s.Email] = struct{}{}
-//	}
-//	 _, ok := set[email]
-//	return ok
-//}
-//func (h Hoges) Len() int {
-//	return len(h)
-//}
-//func (h Hoges) Swap(i, j int) {
-//	h[i], h[j] = h[j], h[i]
-//}
-//func (h Hoges) Less(i, j int) bool {
-//	return h[i].Email < h[j].Email
-//}
-
 func main() {
 	scopes := []string{
 		admin.AdminDirectoryOrgunitScope, admin.AdminDirectoryUserScope,
