@@ -12,8 +12,6 @@ import (
 	"io"
 	"os"
 	"strings"
-	"github.com/ken5scal/gsuite_toolkit/services/users"
-	"time"
 	"github.com/ken5scal/gsuite_toolkit/services/reports"
 )
 
@@ -22,10 +20,44 @@ const (
 )
 
 var isChecked = make(map[string]bool)
-var actors  []*report.ActivityActor
-var officeIPs = [...]string{"124.32.248.42", "210.130.170.193", "210.138.23.111", "210.224.77.186", "118.243.201.33", "122.220.198.115"}
+var officeIPs = []string{"124.32.248.42", "210.130.170.193", "210.138.23.111", "210.224.77.186", "118.243.201.33", "122.220.198.115"}
 
-//type
+type Hoge struct {
+	Email string
+	officeLogin bool
+	outSideIPs []string
+}
+
+var Hoges = make(map[string]*Hoge)
+
+func containIP(ips []string, ip string) bool {
+	set := make(map[string]struct{}, len(ips))
+	for _, s := range ips {
+		set[s] = struct{}{}
+	}
+
+	_, ok := set[ip]
+	return ok
+}
+
+//type Hoges []*Hoge
+//func (h Hoges) containHoge(email string) bool {
+//	set := make(map[string]struct{}, len(h))
+//	for _, s := range h {
+//		set[s.Email] = struct{}{}
+//	}
+//	 _, ok := set[email]
+//	return ok
+//}
+//func (h Hoges) Len() int {
+//	return len(h)
+//}
+//func (h Hoges) Swap(i, j int) {
+//	h[i], h[j] = h[j], h[i]
+//}
+//func (h Hoges) Less(i, j int) bool {
+//	return h[i].Email < h[j].Email
+//}
 
 func main() {
 	scopes := []string{
@@ -33,28 +65,6 @@ func main() {
 		report.AdminReportsAuditReadonlyScope, report.AdminReportsUsageReadonlyScope,
 	}
 	c := client.NewClient(clientSecretFileName, scopes)
-
-	userService, err := users.NewService(c.Client)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	users, err := userService.GetAllUsersInDomain("moneyforward.co.jp", 500)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	time30DaysAgo := time.Now().Add(-time.Duration(10) * time.Hour * 24)
-
-	for _, user := range users.Users {
-		isChecked[user.PrimaryEmail] = false
-
-		layout := "2006-01-02T15:04:05.000Z"
-		t, _ := time.Parse(layout, user.LastLoginTime)
-		if t.Before(time30DaysAgo) {
-			fmt.Println(user.PrimaryEmail)
-		}
-	}
 
 	s, err := reports.NewService(c.Client)
 	if err != nil {
@@ -66,25 +76,33 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	// activity.Id.Time "2017-02-10T09:50:28.000Z"
-	for _, activity := range a.Items {
+	for _, activity := range a {
 		email := activity.Actor.Email
-		if email == "omura.masakazu@moneyforward.co.jp" {
-			fmt.Println(email)
-		}
+		ip := activity.IpAddress
 
-		if value, ok := Hoges[email]; !ok {
-			Hoges[email] = &Hoge{email, false, []string{activity.IpAddress}}
+		if value, ok := Hoges[email]; ok {
+			if !value.officeLogin {
+				value.officeLogin = containIP(officeIPs, ip)
+			}
+			if !containIP(value.outSideIPs, ip) {
+				value.outSideIPs = append(value.outSideIPs, ip)
+			}
 		} else {
-			value.outSideIPs = append(value.outSideIPs, activity.IpAddress)
+			Hoges[email] = &Hoge{
+				email,
+				containIP(officeIPs, ip),
+				[]string{ip}}
 		}
 	}
 
-	for key, value := range Hoges  {
-		fmt.Println(key)
-		fmt.Print("     IP: ")
-		fmt.Println(value.outSideIPs)
+	for key, value := range Hoges {
+		if !value.officeLogin {
+			fmt.Println(key)
+			fmt.Print("     IP: ")
+			fmt.Println(value.outSideIPs)
+		}
 	}
+
 
 	//
 	//payload := constructPayload("/users/suzuki/Desktop/org_structure.csv")

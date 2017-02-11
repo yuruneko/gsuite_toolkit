@@ -103,27 +103,6 @@ func (s *Service) GetLoginActivities() ([]*admin.Activity, error) {
 	}
 
 	return activityList, nil
-
-	//if err != nil {
-	//	fmt.Println(err)
-	//}
-
-	//fmt.Println(activities)
-	//
-	//if activities.NextPageToken != "" {
-	//	activities, err = s.ActivitiesService.
-	//		List("all", "login").
-	//		EventName("login_success").
-	//	//StartTime(t).
-	//		StartTime("2017-01-20T20:35:28.000Z").
-	//		EndTime("2017-02-05T20:35:28.000Z").
-	//		PageToken(activities.NextPageToken).
-	//		Do()
-	//}
-	//
-	//fmt.Println(activities)
-	//
-	//return activities, err
 }
 
 func (s *Service) GetUsersNotLoggedIn() {
