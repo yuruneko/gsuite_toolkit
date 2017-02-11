@@ -105,8 +105,50 @@ func (s *Service) GetLoginActivities() ([]*admin.Activity, error) {
 	return activityList, nil
 }
 
-func (s *Service) GetUsersNotLoggedIn() {
+type LoginInformation struct {
+	Email       string
+	OfficeLogin bool
+	LoginIPs    []string
+}
 
+func (s *Service) GetEmployeesNotLogInFromOfficeIP() (map[string]*LoginInformation, error) {
+	data := make(map[string]*LoginInformation)
+	officeIPs := []string{"124.32.248.42", "210.130.170.193", "210.138.23.111", "210.224.77.186", "118.243.201.33", "122.220.198.115"}
+
+	activities, err := s.GetLoginActivities()
+	if err != nil {
+		return nil, err
+	}
+	for _, activity := range activities {
+		email := activity.Actor.Email
+		ip := activity.IpAddress
+
+		if value, ok := data[email]; ok {
+			if !value.OfficeLogin {
+				value.OfficeLogin = containIP(officeIPs, ip)
+			}
+			if !containIP(value.LoginIPs, ip) {
+				value.LoginIPs = append(value.LoginIPs, ip)
+			}
+		} else {
+			data[email] = &LoginInformation{
+				email,
+				containIP(officeIPs, ip),
+				[]string{ip}}
+		}
+	}
+
+	return data, nil
+}
+
+func containIP(ips []string, ip string) bool {
+	set := make(map[string]struct{}, len(ips))
+	for _, s := range ips {
+		set[s] = struct{}{}
+	}
+
+	_, ok := set[ip]
+	return ok
 }
 
 

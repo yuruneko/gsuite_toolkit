@@ -19,28 +19,7 @@ const (
 	clientSecretFileName = "client_secret.json"
 )
 
-var isChecked = make(map[string]bool)
-var officeIPs = []string{"124.32.248.42", "210.130.170.193", "210.138.23.111", "210.224.77.186", "118.243.201.33", "122.220.198.115"}
-
-type Hoge struct {
-	Email string
-	officeLogin bool
-	outSideIPs []string
-}
-
-var Hoges = make(map[string]*Hoge)
-
-func containIP(ips []string, ip string) bool {
-	set := make(map[string]struct{}, len(ips))
-	for _, s := range ips {
-		set[s] = struct{}{}
-	}
-
-	_, ok := set[ip]
-	return ok
-}
-
-//type Hoges []*Hoge
+//type Hoges []*LoginInformation
 //func (h Hoges) containHoge(email string) bool {
 //	set := make(map[string]struct{}, len(h))
 //	for _, s := range h {
@@ -71,35 +50,13 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	a, err := s.GetLoginActivities()
-	if err != nil {
-		log.Fatalln(err)
-	}
+	loginData, _ := s.GetEmployeesNotLogInFromOfficeIP()
 
-	for _, activity := range a {
-		email := activity.Actor.Email
-		ip := activity.IpAddress
-
-		if value, ok := Hoges[email]; ok {
-			if !value.officeLogin {
-				value.officeLogin = containIP(officeIPs, ip)
-			}
-			if !containIP(value.outSideIPs, ip) {
-				value.outSideIPs = append(value.outSideIPs, ip)
-			}
-		} else {
-			Hoges[email] = &Hoge{
-				email,
-				containIP(officeIPs, ip),
-				[]string{ip}}
-		}
-	}
-
-	for key, value := range Hoges {
-		if !value.officeLogin {
+	for key, value := range loginData {
+		if !value.OfficeLogin {
 			fmt.Println(key)
 			fmt.Print("     IP: ")
-			fmt.Println(value.outSideIPs)
+			fmt.Println(value.LoginIPs)
 		}
 	}
 
