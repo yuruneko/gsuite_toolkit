@@ -27,7 +27,15 @@ func main() {
 	app.Usage = "help managing gsuite"
 	app.Action  = func(c *cli.Context) error {
 		fmt.Println("Test result")
+		fmt.Printf("Hello %q", c.Args().Get(0))
 		return nil
+	}
+	app.Flags = []cli.Flag{
+		cli.StringFlag{
+			"lang",
+			"english",
+			"language for the greeting",
+		},
 	}
 	app.Run(os.Args)
 
