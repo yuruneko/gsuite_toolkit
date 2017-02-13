@@ -14,6 +14,7 @@ import (
 	"strings"
 	"github.com/ken5scal/gsuite_toolkit/services/users"
 	"github.com/ken5scal/gsuite_toolkit/services/reports"
+	"github.com/urfave/cli"
 )
 
 const (
@@ -21,6 +22,8 @@ const (
 )
 
 func main() {
+	app := cli.NewApp()
+
 	scopes := []string{
 		admin.AdminDirectoryOrgunitScope, admin.AdminDirectoryUserScope,
 		report.AdminReportsAuditReadonlyScope, report.AdminReportsUsageReadonlyScope,
