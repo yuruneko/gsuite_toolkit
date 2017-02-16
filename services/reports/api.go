@@ -48,6 +48,11 @@ func (s *Service) GetUserUsage(key, date, params string) (*admin.UsageReports, e
 		Do()
 }
 
+type Users struct {
+	TimeStamp time.Time
+	Users []*admin.UsageReport
+}
+
 // GetNon2StepVerifiedUsers returns emails of Users who have not yet enabled 2 step verification.
 // date Must be in ISO 8601 format, yyyy-mm-dd
 // Example: GetNon2StepVerifiedUsers("2017-01-01")
@@ -56,16 +61,17 @@ func (s *Service) GetNon2StepVerifiedUsers() (*Users, error) {
 	var err error
 	max_retry := 10
 
+	var timeStamp time.Time
 	for i := 0; i < max_retry; i++ {
-		t := time.Now().Add(-time.Duration(time.Duration(i) * time.Hour * 24))
-		ts := strings.Split(t.Format(time.RFC3339), "T") // yyyy-mm-dd
+		timeStamp = time.Now().Add(-time.Duration(time.Duration(i) * time.Hour * 24))
+		ts := strings.Split(timeStamp.Format(time.RFC3339), "T") // yyyy-mm-dd
 		usageReports, err = s.GetUserUsage("all", ts[0], "accounts:is_2sv_enrolled")
 		if err == nil {
 			break
 		}
 	}
 
-	users := &Users{len(usageReports.UsageReports), make([]*admin.UsageReport, 0)}
+	users := &Users{timeStamp, make([]*admin.UsageReport, 0)}
 
 	for _, r := range usageReports.UsageReports {
 		if !r.Parameters[0].BoolValue {
@@ -151,9 +157,4 @@ func containIP(ips []string, ip string) bool {
 
 	_, ok := set[ip]
 	return ok
-}
-
-type Users struct {
-	TotalUser     int
-	Users []*admin.UsageReport
 }

@@ -27,60 +27,29 @@ func main() {
 	app.Name = "gsuite"
 	app.Usage = "help managing gsuite"
 	app.Version = "0.1"
-	app.Authors = []cli.Author{
-		cli.Author{"Kengo Suzuki", "kengoscal@gmai.com",},
-	}
-
-	var option string
-	flags := []cli.Flag {
-		cli.StringFlag{
-			Name: "repot option",
-			Value: "2sv, 2sv",
-			Usage: "get report about `2SV`",
-			Destination: &option,
-		},
-	}
-
+	app.Authors = []cli.Author{{Name: "Kengo Suzuki", Email:"kengoscal@gmai.com"}}
 	app.Action  = func(c *cli.Context) error {
-		arg := subCommandReport
 		if c.NArg() == 0 {
 			cli.ShowAppHelp(c)
 		}
-		if c.NArg() >0 {
-			arg = c.Args()[0]
-		}
-
-		switch arg {
-		case subCommandReport:
-			if option == "2sv" {
-				// Get 2 sv report
-				//non2svUsers, e := GetReportNon2StepVerifiedUsers()
-				//if e != nil {
-				//	return cli.NewExitError(e,1)
-				//}
-				//for _, user := range non2svUsers.Users {
-				//	fmt.Println(user.Entity.UserEmail)
-				//}
-			}
-		}
-
 		return nil
 	}
 
 	app.Commands = []cli.Command{
 		{
-			Name: "repot",
+			Name: subCommandReport,
 			Category: subCommandReport,
 			Subcommands: []cli.Command{
 				{
 					Name:  "2sv",
 					Usage: "get employees who have not enabled 2sv",
 					Action: func(c *cli.Context) error {
-						non2svUsers, e := GetReportNon2StepVerifiedUsers()
+						non2svUserReports, e := GetReportNon2StepVerifiedUsers()
 						if e != nil {
 							return cli.NewExitError(e,1)
 						}
-						for _, user := range non2svUsers.Users {
+						fmt.Println("Latest Report: " + non2svUserReports.TimeStamp.String())
+						for _, user := range non2svUserReports.Users {
 							fmt.Println(user.Entity.UserEmail)
 						}
 						return nil
@@ -103,7 +72,7 @@ func main() {
 	}
 
 	//app.Before = altsrc.InitInputSourceWithContext(flags, altsrc.NewYamlSourceFromFlagFunc("flagfilename"))
-	app.Flags = flags
+	//app.Flags = flags
 
 	sort.Sort(cli.FlagsByName(app.Flags))
 	sort.Sort(cli.CommandsByName(app.Commands))
