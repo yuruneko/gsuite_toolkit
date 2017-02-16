@@ -41,16 +41,41 @@ func GetNon2StepVerifiedUsers(client *http.Client) error {
 	return nil
 }
 
+// GetIllegalLoginUsersAndIp
+// Main purpose is to detect employees who have not logged in from office for 30days
 func GetIllegalLoginUsersAndIp(client *http.Client) error {
 	s, err := reports.NewService(client)
 	if err != nil {
 		return err
 	}
-	loginData, err := s.GetEmployeesNotLogInFromOfficeIP()
+	activities, err := s.GetLoginActivities()
 	if err != nil {
 		return err
 	}
-	for key, value := range loginData {
+
+	data := make(map[string]*LoginInformation)
+	officeIPs := []string{"124.32.248.42", "210.130.170.193", "210.138.23.111", "210.224.77.186", "118.243.201.33", "122.220.198.115"}
+
+	for _, activity := range activities {
+		email := activity.Actor.Email
+		ip := activity.IpAddress
+
+		if value, ok := data[email]; ok {
+			if !value.OfficeLogin {
+				// If an user has logged in from not verified IP so far
+				// then check if new IP is the one from office or not.
+				value.OfficeLogin = containIP(officeIPs, ip)
+			}
+			value.LoginIPs = append(value.LoginIPs, ip)
+		} else {
+			data[email] = &LoginInformation{
+				email,
+				containIP(officeIPs, ip),
+				[]string{ip}}
+		}
+	}
+
+	for key, value := range data {
 		if !value.OfficeLogin {
 			fmt.Println(key)
 			fmt.Print("     IP: ")
@@ -58,4 +83,19 @@ func GetIllegalLoginUsersAndIp(client *http.Client) error {
 		}
 	}
 	return nil
+}
+type LoginInformation struct {
+	Email       string
+	OfficeLogin bool
+	LoginIPs    []string
+}
+
+func containIP(ips []string, ip string) bool {
+	set := make(map[string]struct{}, len(ips))
+	for _, s := range ips {
+		set[s] = struct{}{}
+	}
+
+	_, ok := set[ip]
+	return ok
 }
