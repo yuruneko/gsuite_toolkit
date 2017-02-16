@@ -12,13 +12,13 @@ import (
 	"io"
 	"os"
 	"strings"
-	"github.com/ken5scal/gsuite_toolkit/services/reports"
 	"github.com/urfave/cli"
 	"sort"
+	"github.com/ken5scal/gsuite_toolkit/actions/reports"
 )
 
 const (
-	clientSecretFileName = "client_secret.json"
+	ClientSecretFileName = "client_secret.json"
 	subCommandReport = "report"
 )
 
@@ -35,6 +35,7 @@ func main() {
 		return nil
 	}
 
+	clientConfig := client.CreateConfig().SetFilename(ClientSecretFileName)
 	app.Commands = []cli.Command{
 		{
 			Name: subCommandReport,
@@ -43,7 +44,13 @@ func main() {
 				{
 					Name:  "2sv",
 					Usage: "get employees who have not enabled 2sv",
-					Action: GetReportNon2StepVerifiedUsers,
+					Before: func(context *cli.Context) error {
+						clientConfig.SetScopes([]string{report.AdminReportsUsageReadonlyScope})
+						return nil
+					},
+					Action: func(context *cli.Context) error {
+						return reports.GetReportNon2StepVerifiedUsers(clientConfig.Build())
+					},
 				},
 				{
 					Name:  "remove",
@@ -118,24 +125,6 @@ func main() {
 	//if err != nil {
 	//	log.Fatalln(err)
 	//}
-}
-
-func GetReportNon2StepVerifiedUsers(context *cli.Context) error {
-	client := client.NewClient(clientSecretFileName, []string{report.AdminReportsUsageReadonlyScope})
-	s, err := reports.NewService(client)
-	if err != nil {
-		return err
-	}
-	non2svUserReports, err := s.GetNon2StepVerifiedUsers()
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("Latest Report: " + non2svUserReports.TimeStamp.String())
-	for _, user := range non2svUserReports.Users {
-		fmt.Println(user.Entity.UserEmail)
-	}
-	return nil
 }
 
 func constructPayload(filePath string) string {

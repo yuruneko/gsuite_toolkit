@@ -16,26 +16,41 @@ import (
 )
 
 // Client to Carry out Admin job in GSuite
-type Client struct {
-	*http.Client
+type ClientConfig struct {
+	fileName string
+	scopes []string
+}
+
+func CreateConfig() *ClientConfig {
+	return &ClientConfig{}
+}
+
+func (config *ClientConfig) SetFilename(fileName string) *ClientConfig {
+	config.fileName = fileName
+	return config
+}
+
+func (config *ClientConfig) SetScopes(scopes []string) *ClientConfig {
+	config.scopes = scopes
+	return config
 }
 
 // NewClient Generate New Client
-func NewClient(fileName string, scopes []string) *http.Client {
-	b, err := ioutil.ReadFile(fileName)
+func (config *ClientConfig) Build() *http.Client {
+	b, err := ioutil.ReadFile(config.fileName)
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}
 
 	// If modifying these scopes, delete your previously saved credentials
 	// at ~/.credentials/admin-directory_v1-go-quickstart.json
-	config, err := google.ConfigFromJSON(b, scopes...)
+	c, err := google.ConfigFromJSON(b, config.scopes...)
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
 
-	token := getToken(config)
-	return config.Client(context.Background(), token)
+	token := getToken(c)
+	return c.Client(context.Background(), token)
 }
 
 func getToken(config *oauth2.Config) *oauth2.Token {
