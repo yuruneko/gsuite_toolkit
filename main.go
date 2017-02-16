@@ -90,22 +90,6 @@ func main() {
 	//for _, user := range goneUsers {
 	//	fmt.Println(user.PrimaryEmail)
 	//}
-	//
-	//
-	//s, err := reports.NewService(c.Client)
-	//if err != nil {
-	//	log.Fatalln(err)
-	//}
-	//
-	//loginData, _ := s.GetEmployeesNotLogInFromOfficeIP()
-	//
-	//for key, value := range loginData {
-	//	if !value.OfficeLogin {
-	//		fmt.Println(key)
-	//		fmt.Print("     IP: ")
-	//		fmt.Println(value.LoginIPs)
-	//	}
-	//}
 
 	//
 	//payload := constructPayload("/non2SVuser/suzuki/Desktop/org_structure.csv")
