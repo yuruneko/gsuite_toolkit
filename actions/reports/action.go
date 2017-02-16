@@ -24,6 +24,8 @@ func GetNon2StepVerifiedUsers(client *http.Client) error {
 	var paramIndex int
 	fmt.Println("Latest Report: " + report.UsageReports[0].Date)
 	for i, param := range report.UsageReports[0].Parameters {
+		// https://developers.google.com/admin-sdk/reports/v1/guides/manage-usage-users
+		// Parameters: https://developers.google.com/admin-sdk/reports/v1/reference/usage-ref-appendix-a/users-accounts
 		if param.Name == "accounts:is_2sv_enrolled" {
 			paramIndex = i
 			break

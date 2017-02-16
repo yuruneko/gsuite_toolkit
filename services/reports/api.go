@@ -51,6 +51,7 @@ func (s *Service) GetUserUsage(key, date, params string) (*admin.UsageReports, e
 
 // Get2StepVerifiedStatusReport returns reports about 2 step verification status.
 // date Must be in ISO 8601 format, yyyy-mm-dd
+// https://developers.google.com/admin-sdk/reports/v1/guides/manage-usage-users
 // Example: Get2StepVerifiedStatusReport("2017-01-01")
 func (s *Service) Get2StepVerifiedStatusReport() (*admin.UsageReports, error) {
 	var usageReports *admin.UsageReports
