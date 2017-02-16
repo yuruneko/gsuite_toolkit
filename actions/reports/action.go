@@ -4,6 +4,7 @@ import (
 	"github.com/ken5scal/gsuite_toolkit/services/reports"
 	"fmt"
 	"net/http"
+	"errors"
 )
 
 func GetNon2StepVerifiedUsers(client *http.Client) error {
@@ -11,15 +12,30 @@ func GetNon2StepVerifiedUsers(client *http.Client) error {
 	if err != nil {
 		return err
 	}
-	non2svUserReports, err := s.GetNon2StepVerifiedUsers()
+	report, err := s.Get2StepVerifiedStatusReport()
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("Latest Report: " + non2svUserReports.TimeStamp.String())
-	for _, user := range non2svUserReports.Users {
-		fmt.Println(user.Entity.UserEmail)
+	if len(report.UsageReports) == 0 {
+		return errors.New("No Report Available")
 	}
+
+	var paramIndex int
+	fmt.Println("Latest Report: " + report.UsageReports[0].Date)
+	for i, param := range report.UsageReports[0].Parameters {
+		if param.Name == "accounts:is_2sv_enrolled" {
+			paramIndex = i
+			break
+		}
+	}
+
+	for _, r := range report.UsageReports {
+		if !r.Parameters[paramIndex].BoolValue {
+			fmt.Println(r.Entity.UserEmail)
+		}
+	}
+
 	return nil
 }
 

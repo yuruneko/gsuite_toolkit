@@ -54,10 +54,10 @@ type Users struct {
 	Users []*admin.UsageReport
 }
 
-// GetNon2StepVerifiedUsers returns emails of Users who have not yet enabled 2 step verification.
+// Get2StepVerifiedStatusReport returns reports about 2 step verification status.
 // date Must be in ISO 8601 format, yyyy-mm-dd
-// Example: GetNon2StepVerifiedUsers("2017-01-01")
-func (s *Service) GetNon2StepVerifiedUsers() (*Users, error) {
+// Example: Get2StepVerifiedStatusReport("2017-01-01")
+func (s *Service) Get2StepVerifiedStatusReport() (*admin.UsageReports, error) {
 	var usageReports *admin.UsageReports
 	var err error
 	max_retry := 10
@@ -75,15 +75,7 @@ func (s *Service) GetNon2StepVerifiedUsers() (*Users, error) {
 			break
 		}
 	}
-
-	users := &Users{timeStamp, make([]*admin.UsageReport, 0)}
-
-	for _, r := range usageReports.UsageReports {
-		if !r.Parameters[0].BoolValue {
-			users.Users = append(users.Users, r)
-		}
-	}
-	return users, err
+	return usageReports, err
 }
 
 // GetLoginActivities reports login activities of all Users within organization
