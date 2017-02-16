@@ -121,9 +121,8 @@ func main() {
 }
 
 func GetReportNon2StepVerifiedUsers(context *cli.Context) error {
-
-	c := client.NewClient(clientSecretFileName, []string{report.AdminReportsUsageReadonlyScope, })
-	s, err := reports.NewService(c.Client)
+	client := client.NewClient(clientSecretFileName, []string{report.AdminReportsUsageReadonlyScope})
+	s, err := reports.NewService(client)
 	if err != nil {
 		return err
 	}

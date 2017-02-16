@@ -21,7 +21,7 @@ type Client struct {
 }
 
 // NewClient Generate New Client
-func NewClient(fileName string, scopes []string) *Client {
+func NewClient(fileName string, scopes []string) *http.Client {
 	b, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
@@ -35,14 +35,7 @@ func NewClient(fileName string, scopes []string) *Client {
 	}
 
 	token := getToken(config)
-
-	client := &Client{
-		Client: config.Client(context.Background(), token),
-	}
-
-
-
-	return client
+	return config.Client(context.Background(), token)
 }
 
 func getToken(config *oauth2.Config) *oauth2.Token {
