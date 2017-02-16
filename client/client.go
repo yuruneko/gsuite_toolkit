@@ -29,9 +29,9 @@ const (
 func (scope Scope) String() string {
 	switch scope {
 	case AdminReportsUsageReadonlyScope:
-		return report.AdminReportsAuditReadonlyScope
-	case AdminReportsAuditReadonlyScope:
 		return report.AdminReportsUsageReadonlyScope
+	case AdminReportsAuditReadonlyScope:
+		return report.AdminReportsAuditReadonlyScope
 	case AdminDirectoryOrgUnitScope:
 		return admin.AdminDirectoryOrgunitScope
 	case AdminDirectoryUserScope:
