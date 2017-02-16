@@ -12,15 +12,14 @@ import (
 	"io"
 	"os"
 	"strings"
-	"github.com/ken5scal/gsuite_toolkit/services/users"
 	"github.com/ken5scal/gsuite_toolkit/services/reports"
 	"github.com/urfave/cli"
 	"sort"
-	"github.com/urfave/cli/altsrc"
 )
 
 const (
 	clientSecretFileName = "client_secret.json"
+	subCommandReport = "report"
 )
 
 func main() {
@@ -28,27 +27,40 @@ func main() {
 	app.Name = "gsuite"
 	app.Usage = "help managing gsuite"
 	app.Version = "0.1"
+	app.Authors = []cli.Author{
+		cli.Author{"Kengo Suzuki", "kengoscal@gmai.com",},
+	}
 
 	var option string
 	flags := []cli.Flag {
 		cli.StringFlag{
 			Name: "repot option",
 			Value: "2sv, 2sv",
-			Usage: "Get report about `2SV`",
+			Usage: "get report about `2SV`",
 			Destination: &option,
 		},
 	}
 
 	app.Action  = func(c *cli.Context) error {
-		arg := "repot"
+		arg := subCommandReport
+		if c.NArg() == 0 {
+			cli.ShowAppHelp(c)
+		}
 		if c.NArg() >0 {
 			arg = c.Args()[0]
 		}
 
 		switch arg {
-		case "report":
+		case subCommandReport:
 			if option == "2sv" {
 				// Get 2 sv report
+				//non2svUsers, e := GetReportNon2StepVerifiedUsers()
+				//if e != nil {
+				//	return cli.NewExitError(e,1)
+				//}
+				//for _, user := range non2svUsers.Users {
+				//	fmt.Println(user.Entity.UserEmail)
+				//}
 			}
 		}
 
@@ -57,16 +69,40 @@ func main() {
 
 	app.Commands = []cli.Command{
 		{
-			Name: "get 2sv",
-			Category: "report",
+			Name: "repot",
+			Category: subCommandReport,
+			Subcommands: []cli.Command{
+				{
+					Name:  "2sv",
+					Usage: "get employees who have not enabled 2sv",
+					Action: func(c *cli.Context) error {
+						non2svUsers, e := GetReportNon2StepVerifiedUsers()
+						if e != nil {
+							return cli.NewExitError(e,1)
+						}
+						for _, user := range non2svUsers.Users {
+							fmt.Println(user.Entity.UserEmail)
+						}
+						return nil
+					},
+				},
+				{
+					Name:  "remove",
+					Usage: "remove an existing template",
+					Action: func(c *cli.Context) error {
+						fmt.Println("removed task template: ", c.Args().First())
+						return nil
+					},
+				},
+			},
 		},
 		{
-			Name: "get login",
-			Category: "report",
+			Name: "login",
+			Category: subCommandReport,
 		},
 	}
 
-	app.Before = altsrc.InitInputSourceWithContext(flags, altsrc.NewYamlSourceFromFlagFunc("flagfilename"))
+	//app.Before = altsrc.InitInputSourceWithContext(flags, altsrc.NewYamlSourceFromFlagFunc("flagfilename"))
 	app.Flags = flags
 
 	sort.Sort(cli.FlagsByName(app.Flags))
@@ -74,43 +110,39 @@ func main() {
 
 	app.Run(os.Args)
 
-	scopes := []string{
-		admin.AdminDirectoryOrgunitScope, admin.AdminDirectoryUserScope,
-		report.AdminReportsAuditReadonlyScope, report.AdminReportsUsageReadonlyScope,
-	}
-	c := client.NewClient(clientSecretFileName, scopes)
-	goneUsers, err := users.GetUsersWhoHasNotLoggedInFor30Days(c.Client)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	for _, user := range goneUsers {
-		fmt.Println(user.PrimaryEmail)
-	}
+	//scopes := []string{
+	//	admin.AdminDirectoryOrgunitScope, admin.AdminDirectoryUserScope,
+	//	report.AdminReportsAuditReadonlyScope, report.AdminReportsUsageReadonlyScope,
+	//}
+	//c := client.NewClient(clientSecretFileName, scopes)
+	//goneUsers, err := users.GetUsersWhoHasNotLoggedInFor30Days(c.Client)
+	//if err != nil {
+	//	log.Fatalln(err)
+	//}
+	//for _, user := range goneUsers {
+	//	fmt.Println(user.PrimaryEmail)
+	//}
+	//
+	//
+	//s, err := reports.NewService(c.Client)
+	//if err != nil {
+	//	log.Fatalln(err)
+	//}
+	//
+	//loginData, _ := s.GetEmployeesNotLogInFromOfficeIP()
+	//
+	//for key, value := range loginData {
+	//	if !value.OfficeLogin {
+	//		fmt.Println(key)
+	//		fmt.Print("     IP: ")
+	//		fmt.Println(value.LoginIPs)
+	//	}
+	//}
 
-
-	s, err := reports.NewService(c.Client)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	loginData, _ := s.GetEmployeesNotLogInFromOfficeIP()
-
-	for key, value := range loginData {
-		if !value.OfficeLogin {
-			fmt.Println(key)
-			fmt.Print("     IP: ")
-			fmt.Println(value.LoginIPs)
-		}
-	}
-
-	non2SVuser, err := s.GetNon2StepVerifiedUsers()
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	for _, user := range non2SVuser.Users {
-		fmt.Println(user.Entity.UserEmail)
-	}
+	//GetReportNon2StepVerifiedUsers(err, s)
+	//for _, user := range non2SVuser.Users {
+	//	fmt.Println(user.Entity.UserEmail)
+	//}
 
 	//
 	//payload := constructPayload("/non2SVuser/suzuki/Desktop/org_structure.csv")
@@ -127,6 +159,19 @@ func main() {
 	//if err != nil {
 	//	log.Fatalln(err)
 	//}
+}
+func GetReportNon2StepVerifiedUsers() (*reports.Users ,error) {
+	c := client.NewClient(clientSecretFileName, []string{
+		admin.AdminDirectoryOrgunitScope, admin.AdminDirectoryUserScope,
+		report.AdminReportsAuditReadonlyScope, report.AdminReportsUsageReadonlyScope,
+	})
+	s, err := reports.NewService(c.Client)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return s.GetNon2StepVerifiedUsers()
 }
 
 func constructPayload(filePath string) string {

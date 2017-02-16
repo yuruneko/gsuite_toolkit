@@ -36,7 +36,7 @@ func NewService(client *http.Client) (*Service, error) {
 		client}, nil
 }
 
-// GetUserUsage returns G Suite service activities across your account's users
+// GetUserUsage returns G Suite service activities across your account's Users
 // key should be either "all" or primary id
 // params should be one or combination of user report parameters
 // https://developers.google.com/admin-sdk/reports/v1/guides/manage-usage-users
@@ -48,10 +48,10 @@ func (s *Service) GetUserUsage(key, date, params string) (*admin.UsageReports, e
 		Do()
 }
 
-// GetNon2StepVerifiedUsers returns emails of users who have not yet enabled 2 step verification.
+// GetNon2StepVerifiedUsers returns emails of Users who have not yet enabled 2 step verification.
 // date Must be in ISO 8601 format, yyyy-mm-dd
 // Example: GetNon2StepVerifiedUsers("2017-01-01")
-func (s *Service) GetNon2StepVerifiedUsers() (*users, error) {
+func (s *Service) GetNon2StepVerifiedUsers() (*Users, error) {
 	var usageReports *admin.UsageReports
 	var err error
 	max_retry := 10
@@ -65,7 +65,7 @@ func (s *Service) GetNon2StepVerifiedUsers() (*users, error) {
 		}
 	}
 
-	users := &users{len(usageReports.UsageReports), make([]*admin.UsageReport, 0)}
+	users := &Users{len(usageReports.UsageReports), make([]*admin.UsageReport, 0)}
 
 	for _, r := range usageReports.UsageReports {
 		if !r.Parameters[0].BoolValue {
@@ -75,7 +75,7 @@ func (s *Service) GetNon2StepVerifiedUsers() (*users, error) {
 	return users, err
 }
 
-// GetLoginActivities reports login activities of all users within organization
+// GetLoginActivities reports login activities of all Users within organization
 func (s *Service) GetLoginActivities() ([]*admin.Activity, error) {
 	time30DaysAgo := time.Now().Add(-time.Duration(30) * time.Hour * 24)
 	layout := "2006-01-02T15:04:05.000Z"
@@ -153,7 +153,7 @@ func containIP(ips []string, ip string) bool {
 	return ok
 }
 
-type users struct {
+type Users struct {
 	TotalUser     int
 	Users []*admin.UsageReport
 }
