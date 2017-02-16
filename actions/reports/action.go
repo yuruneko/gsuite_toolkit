@@ -48,7 +48,7 @@ func GetIllegalLoginUsersAndIp(client *http.Client) error {
 	if err != nil {
 		return err
 	}
-	activities, err := s.GetLoginActivities()
+	activities, err := s.GetLoginActivities(30)
 	if err != nil {
 		return err
 	}

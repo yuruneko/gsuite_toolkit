@@ -75,8 +75,10 @@ func (s *Service) Get2StepVerifiedStatusReport() (*admin.UsageReports, error) {
 }
 
 // GetLoginActivities reports login activities of all Users within organization
-func (s *Service) GetLoginActivities() ([]*admin.Activity, error) {
-	time30DaysAgo := time.Now().Add(-time.Duration(30) * time.Hour * 24)
+// daysAgo: number of past days you are interested from present time
+// EX: GetLoginActivities(30)
+func (s *Service) GetLoginActivities(daysAgo int) ([]*admin.Activity, error) {
+	time30DaysAgo := time.Now().Add(-time.Duration(daysAgo) * time.Hour * 24)
 	layout := "2006-01-02T15:04:05.000Z"
 
 	call := s.ActivitiesService.
@@ -102,52 +104,4 @@ func (s *Service) GetLoginActivities() ([]*admin.Activity, error) {
 	}
 
 	return activityList, nil
-}
-
-type LoginInformation struct {
-	Email       string
-	OfficeLogin bool
-	LoginIPs    []string
-}
-
-// GetEmployeesNotLogInFromOfficeIP
-// Main purpose is to detect employees who have not logged in from office for 30days
-func (s *Service) GetEmployeesNotLogInFromOfficeIP() (map[string]*LoginInformation, error) {
-	data := make(map[string]*LoginInformation)
-	officeIPs := []string{"124.32.248.42", "210.130.170.193", "210.138.23.111", "210.224.77.186", "118.243.201.33", "122.220.198.115"}
-
-	activities, err := s.GetLoginActivities()
-	if err != nil {
-		return nil, err
-	}
-	for _, activity := range activities {
-		email := activity.Actor.Email
-		ip := activity.IpAddress
-
-		if value, ok := data[email]; ok {
-			if !value.OfficeLogin {
-				// If an user has logged in from not verified IP so far
-				// then check if new IP is the one from office or not.
-				value.OfficeLogin = containIP(officeIPs, ip)
-			}
-			value.LoginIPs = append(value.LoginIPs, ip)
-		} else {
-			data[email] = &LoginInformation{
-				email,
-				containIP(officeIPs, ip),
-				[]string{ip}}
-		}
-	}
-
-	return data, nil
-}
-
-func containIP(ips []string, ip string) bool {
-	set := make(map[string]struct{}, len(ips))
-	for _, s := range ips {
-		set[s] = struct{}{}
-	}
-
-	_, ok := set[ip]
-	return ok
 }
