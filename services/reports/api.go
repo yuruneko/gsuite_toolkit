@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 	"strings"
+	"google.golang.org/api/googleapi"
 )
 
 // Service provides following functions.
@@ -66,7 +67,11 @@ func (s *Service) GetNon2StepVerifiedUsers() (*Users, error) {
 		timeStamp = time.Now().Add(-time.Duration(time.Duration(i) * time.Hour * 24))
 		ts := strings.Split(timeStamp.Format(time.RFC3339), "T") // yyyy-mm-dd
 		usageReports, err = s.GetUserUsage("all", ts[0], "accounts:is_2sv_enrolled")
-		if err == nil {
+		if e, ok := err.(*googleapi.Error); ok {
+			if e.Code == http.StatusForbidden {
+				return nil, err
+			}
+		} else if err == nil {
 			break
 		}
 	}
