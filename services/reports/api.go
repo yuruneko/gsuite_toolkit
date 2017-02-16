@@ -49,11 +49,6 @@ func (s *Service) GetUserUsage(key, date, params string) (*admin.UsageReports, e
 		Do()
 }
 
-type Users struct {
-	TimeStamp time.Time
-	Users []*admin.UsageReport
-}
-
 // Get2StepVerifiedStatusReport returns reports about 2 step verification status.
 // date Must be in ISO 8601 format, yyyy-mm-dd
 // Example: Get2StepVerifiedStatusReport("2017-01-01")
