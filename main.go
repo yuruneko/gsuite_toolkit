@@ -7,7 +7,7 @@ import (
 
 	"encoding/csv"
 	"fmt"
-	admin "google.golang.org/api/admin/directory/v1"
+	//admin "google.golang.org/api/admin/directory/v1"
 	report "google.golang.org/api/admin/reports/v1"
 	"io"
 	"os"
@@ -43,17 +43,7 @@ func main() {
 				{
 					Name:  "2sv",
 					Usage: "get employees who have not enabled 2sv",
-					Action: func(c *cli.Context) error {
-						non2svUserReports, e := GetReportNon2StepVerifiedUsers()
-						if e != nil {
-							return cli.NewExitError(e,1)
-						}
-						fmt.Println("Latest Report: " + non2svUserReports.TimeStamp.String())
-						for _, user := range non2svUserReports.Users {
-							fmt.Println(user.Entity.UserEmail)
-						}
-						return nil
-					},
+					Action: GetReportNon2StepVerifiedUsers,
 				},
 				{
 					Name:  "remove",
@@ -129,18 +119,24 @@ func main() {
 	//	log.Fatalln(err)
 	//}
 }
-func GetReportNon2StepVerifiedUsers() (*reports.Users ,error) {
-	c := client.NewClient(clientSecretFileName, []string{
-		admin.AdminDirectoryOrgunitScope, admin.AdminDirectoryUserScope,
-		report.AdminReportsAuditReadonlyScope, report.AdminReportsUsageReadonlyScope,
-	})
-	s, err := reports.NewService(c.Client)
 
+func GetReportNon2StepVerifiedUsers(context *cli.Context) error {
+
+	c := client.NewClient(clientSecretFileName, []string{report.AdminReportsUsageReadonlyScope, })
+	s, err := reports.NewService(c.Client)
 	if err != nil {
-		return nil, err
+		return err
+	}
+	non2svUserReports, err := s.GetNon2StepVerifiedUsers()
+	if err != nil {
+		return err
 	}
 
-	return s.GetNon2StepVerifiedUsers()
+	fmt.Println("Latest Report: " + non2svUserReports.TimeStamp.String())
+	for _, user := range non2svUserReports.Users {
+		fmt.Println(user.Entity.UserEmail)
+	}
+	return nil
 }
 
 func constructPayload(filePath string) string {
