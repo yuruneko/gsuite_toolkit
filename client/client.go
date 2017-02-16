@@ -13,10 +13,36 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	report "google.golang.org/api/admin/reports/v1"
+	admin "google.golang.org/api/admin/directory/v1"
 )
 
+type Scope int
+
+const (
+	AdminReportsUsageReadonlyScope Scope = iota
+	AdminReportsAuditReadonlyScope
+	AdminDirectoryOrgUnitScope
+	AdminDirectoryUserScope
+)
+
+func (scope Scope) String() string {
+	switch scope {
+	case AdminReportsUsageReadonlyScope:
+		return report.AdminReportsAuditReadonlyScope
+	case AdminReportsAuditReadonlyScope:
+		return report.AdminReportsUsageReadonlyScope
+	case AdminDirectoryOrgUnitScope:
+		return admin.AdminDirectoryOrgunitScope
+	case AdminDirectoryUserScope:
+		return admin.AdminDirectoryUserScope
+	default:
+		return "" //Nothing
+	}
+}
+
 // Client to Carry out Admin job in GSuite
-type ClientConfig struct {
+type 	ClientConfig struct {
 	fileName string
 	scopes []string
 }

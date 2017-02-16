@@ -2,12 +2,8 @@ package main
 
 import (
 	"log"
-
 	"github.com/ken5scal/gsuite_toolkit/client"
-
 	"encoding/csv"
-	//admin "google.golang.org/api/admin/directory/v1"
-	report "google.golang.org/api/admin/reports/v1"
 	"io"
 	"os"
 	"strings"
@@ -44,7 +40,7 @@ func main() {
 					Name:  "2sv",
 					Usage: "get employees who have not enabled 2sv",
 					Before: func(context *cli.Context) error {
-						clientConfig.SetScopes([]string{report.AdminReportsUsageReadonlyScope})
+						clientConfig.SetScopes([]string{client.AdminReportsUsageReadonlyScope.String()})
 						return nil
 					},
 					Action: func(context *cli.Context) error {
@@ -55,7 +51,7 @@ func main() {
 					Name:  "illegal_login",
 					Usage: "get employees who have not been office for 30 days, but accessing",
 					Before: func(*cli.Context) error {
-						clientConfig.SetScopes([]string{report.AdminReportsAuditReadonlyScope})
+						clientConfig.SetScopes([]string{client.AdminReportsAuditReadonlyScope.String()})
 						return nil
 					},
 					Action: func(c *cli.Context) error {
@@ -79,7 +75,7 @@ func main() {
 	app.Run(os.Args)
 
 	//scopes := []string{
-	//	admin.AdminDirectoryOrgunitScope, admin.AdminDirectoryUserScope,
+	//	admin.AdminDirectoryOrgUnitScope, admin.AdminDirectoryUserScope,
 	//	report.AdminReportsAuditReadonlyScope, report.AdminReportsUsageReadonlyScope,
 	//}
 	//c := client.NewClient(clientSecretFileName, scopes)
