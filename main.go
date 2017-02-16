@@ -15,6 +15,8 @@ import (
 	"github.com/ken5scal/gsuite_toolkit/services/users"
 	"github.com/ken5scal/gsuite_toolkit/services/reports"
 	"github.com/urfave/cli"
+	"sort"
+	"github.com/urfave/cli/altsrc"
 )
 
 const (
@@ -25,10 +27,51 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "gsuite"
 	app.Usage = "help managing gsuite"
+	app.Version = "0.1"
+
+	var option string
+	flags := []cli.Flag {
+		cli.StringFlag{
+			Name: "repot option",
+			Value: "2sv, 2sv",
+			Usage: "Get report about `2SV`",
+			Destination: &option,
+		},
+	}
+
 	app.Action  = func(c *cli.Context) error {
-		fmt.Println("Test result")
+		arg := "repot"
+		if c.NArg() >0 {
+			arg = c.Args()[0]
+		}
+
+		switch arg {
+		case "report":
+			if option == "2sv" {
+				// Get 2 sv report
+			}
+		}
+
 		return nil
 	}
+
+	app.Commands = []cli.Command{
+		{
+			Name: "get 2sv",
+			Category: "report",
+		},
+		{
+			Name: "get login",
+			Category: "report",
+		},
+	}
+
+	app.Before = altsrc.InitInputSourceWithContext(flags, altsrc.NewYamlSourceFromFlagFunc("flagfilename"))
+	app.Flags = flags
+
+	sort.Sort(cli.FlagsByName(app.Flags))
+	sort.Sort(cli.CommandsByName(app.Commands))
+
 	app.Run(os.Args)
 
 	scopes := []string{
