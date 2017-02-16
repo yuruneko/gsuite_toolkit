@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func GetReportNon2StepVerifiedUsers(client *http.Client) error {
+func GetNon2StepVerifiedUsers(client *http.Client) error {
 	s, err := reports.NewService(client)
 	if err != nil {
 		return err
@@ -19,6 +19,25 @@ func GetReportNon2StepVerifiedUsers(client *http.Client) error {
 	fmt.Println("Latest Report: " + non2svUserReports.TimeStamp.String())
 	for _, user := range non2svUserReports.Users {
 		fmt.Println(user.Entity.UserEmail)
+	}
+	return nil
+}
+
+func GetIllegalLoginUsersAndIp(client *http.Client) error {
+	s, err := reports.NewService(client)
+	if err != nil {
+		return err
+	}
+	loginData, err := s.GetEmployeesNotLogInFromOfficeIP()
+	if err != nil {
+		return err
+	}
+	for key, value := range loginData {
+		if !value.OfficeLogin {
+			fmt.Println(key)
+			fmt.Print("     IP: ")
+			fmt.Println(value.LoginIPs)
+		}
 	}
 	return nil
 }

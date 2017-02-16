@@ -6,7 +6,6 @@ import (
 	"github.com/ken5scal/gsuite_toolkit/client"
 
 	"encoding/csv"
-	"fmt"
 	//admin "google.golang.org/api/admin/directory/v1"
 	report "google.golang.org/api/admin/reports/v1"
 	"io"
@@ -49,15 +48,18 @@ func main() {
 						return nil
 					},
 					Action: func(context *cli.Context) error {
-						return reports.GetReportNon2StepVerifiedUsers(clientConfig.Build())
+						return reports.GetNon2StepVerifiedUsers(clientConfig.Build())
 					},
 				},
 				{
-					Name:  "remove",
-					Usage: "remove an existing template",
-					Action: func(c *cli.Context) error {
-						fmt.Println("removed task template: ", c.Args().First())
+					Name:  "illegal_login",
+					Usage: "get employees who have not been office for 30 days, but accessing",
+					Before: func(*cli.Context) error {
+						clientConfig.SetScopes([]string{report.AdminReportsAuditReadonlyScope})
 						return nil
+					},
+					Action: func(c *cli.Context) error {
+						return reports.GetIllegalLoginUsersAndIp(clientConfig.Build())
 					},
 				},
 			},
@@ -103,11 +105,6 @@ func main() {
 	//		fmt.Print("     IP: ")
 	//		fmt.Println(value.LoginIPs)
 	//	}
-	//}
-
-	//GetReportNon2StepVerifiedUsers(err, s)
-	//for _, user := range non2SVuser.Users {
-	//	fmt.Println(user.Entity.UserEmail)
 	//}
 
 	//
