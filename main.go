@@ -9,9 +9,11 @@ import (
 	"strings"
 	"github.com/urfave/cli"
 	"sort"
-	"github.com/ken5scal/gsuite_toolkit/actions/reports"
+	"github.com/ken5scal/gsuite_toolkit/mapper/reports"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"github.com/ken5scal/gsuite_toolkit/services"
+	reports2 "github.com/ken5scal/gsuite_toolkit/services/reports"
 )
 
 const (
@@ -55,23 +57,37 @@ func main() {
 			client.AdminReportsUsageReadonlyScope.String(),
 			client.AdminReportsAuditReadonlyScope.String(), }).
 		Build()
+
+	var s services.Service
+
 	app.Commands = []cli.Command{
 		{
 			Name: subCommandReport,
 			Category: subCommandReport,
+			Usage: "get report on your G Suite",
+			UsageText: "Check potential security risks, trace user login activities, audit admin activities, etc",
+			Before: func(*cli.Context) error {
+				service := &reports2.Service{}
+				err := service.NewService(gsuiteClient)
+				return err
+			},
 			Subcommands: []cli.Command{
 				{
 					Name:  "2sv",
 					Usage: "get employees who have not enabled 2sv",
 					Action: func(context *cli.Context) error {
-						return reports.GetNon2StepVerifiedUsers(gsuiteClient)
+						r, err := s.(*reports2.Service).Get2StepVerifiedStatusReport()
+						handleError(err)
+						return reports.GetNon2StepVerifiedUsers(r)
 					},
 				},
 				{
 					Name:  "illegal_login",
 					Usage: "get employees who have not been office for 30 days, but accessing",
 					Action: func(c *cli.Context) error {
-						return reports.GetIllegalLoginUsersAndIp(gsuiteClient, conf.Trusted.Ip)
+						r, err := s.(*reports2.Service).GetLoginActivities(30)
+						handleError(err)
+						return reports.GetIllegalLoginUsersAndIp(r, conf.Trusted.Ip)
 					},
 				},
 			},
@@ -154,4 +170,10 @@ func RequestLine(method string, email string) string {
 
 func Body() string {
 	return "{\n" + "\"orgUnitPath\": \"/社員・委託社員・派遣社員・アルバイト\"\n" + "}\n"
+}
+
+func handleError(err error) {
+	if err != nil {
+		cli.NewExitError(err, 1)
+	}
 }

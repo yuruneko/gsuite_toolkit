@@ -23,18 +23,18 @@ type Service struct {
 }
 
 // NewService creates instance of Report related Services
-func NewService(client *http.Client) (*Service, error) {
+func (s *Service) NewService(client *http.Client) (error) {
 	reportService, err := admin.New(client)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &Service{
-		reportService.UserUsageReport,
-		reportService.Activities,
-		reportService.Channels,
-		reportService.CustomerUsageReports,
-		client}, nil
+	s.UserUsageReportService = reportService.UserUsageReport
+	s.ActivitiesService = reportService.Activities
+	s.ChannelsService = reportService.Channels
+	s.CustomerUsageReportsService = reportService.CustomerUsageReports
+	s.Client = client
+	return nil
 }
 
 // GetUserUsage returns G Suite service activities across your account's Users

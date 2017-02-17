@@ -1,22 +1,12 @@
 package reports
 
 import (
-	"github.com/ken5scal/gsuite_toolkit/services/reports"
 	"fmt"
-	"net/http"
 	"errors"
+	"google.golang.org/api/admin/reports/v1"
 )
 
-func GetNon2StepVerifiedUsers(client *http.Client) error {
-	s, err := reports.NewService(client)
-	if err != nil {
-		return err
-	}
-	report, err := s.Get2StepVerifiedStatusReport()
-	if err != nil {
-		return err
-	}
-
+func GetNon2StepVerifiedUsers(report *admin.UsageReports) error {
 	if len(report.UsageReports) == 0 {
 		return errors.New("No Report Available")
 	}
@@ -43,16 +33,7 @@ func GetNon2StepVerifiedUsers(client *http.Client) error {
 
 // GetIllegalLoginUsersAndIp
 // Main purpose is to detect employees who have not logged in from office for 30days
-func GetIllegalLoginUsersAndIp(client *http.Client, officeIPs []string) error {
-	s, err := reports.NewService(client)
-	if err != nil {
-		return err
-	}
-	activities, err := s.GetLoginActivities(30)
-	if err != nil {
-		return err
-	}
-
+func GetIllegalLoginUsersAndIp(activities []*admin.Activity, officeIPs []string) error {
 	data := make(map[string]*LoginInformation)
 	for _, activity := range activities {
 		email := activity.Actor.Email
