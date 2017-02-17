@@ -42,17 +42,18 @@ func (scope Scope) String() string {
 }
 
 // Client to Carry out Admin job in GSuite
-type 	ClientConfig struct {
-	fileName string
-	scopes []string
+type ClientConfig struct {
+	clientSecretFileName string
+	scopes               []string
+	domainName string
 }
 
 func CreateConfig() *ClientConfig {
 	return &ClientConfig{}
 }
 
-func (config *ClientConfig) SetFilename(fileName string) *ClientConfig {
-	config.fileName = fileName
+func (config *ClientConfig) SetClientSecretFilename(clientSecretFileName string) *ClientConfig {
+	config.clientSecretFileName = clientSecretFileName
 	return config
 }
 
@@ -61,9 +62,14 @@ func (config *ClientConfig) SetScopes(scopes []string) *ClientConfig {
 	return config
 }
 
+func (config *ClientConfig) setDomain(domainName string) *ClientConfig {
+	config.domainName = domainName
+	return config
+}
+
 // NewClient Generate New Client
 func (config *ClientConfig) Build() *http.Client {
-	b, err := ioutil.ReadFile(config.fileName)
+	b, err := ioutil.ReadFile(config.clientSecretFileName)
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}

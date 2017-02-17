@@ -62,13 +62,13 @@ func (service *Service) ChangeOrgUnit(user *admin.User, unit string) (*admin.Use
 	return service.UsersService.Update(user.PrimaryEmail, user).Do()
 }
 
-func GetUsersWhoHasNotLoggedInFor30Days(c *http.Client) ([]*admin.User, error) {
+func GetUsersWhoHasNotLoggedInFor30Days(c *http.Client, domain string) ([]*admin.User, error) {
 	u, err := NewService(c)
 	if err != nil {
 		return nil, err
 	}
 
-	users, err := u.GetAllUsersInDomain("moneyforward.co.jp", 500)
+	users, err := u.GetAllUsersInDomain(domain, 500)
 	if err != nil {
 		return nil, err
 	}

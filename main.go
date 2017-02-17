@@ -29,6 +29,7 @@ func main() {
 		Office struct {
 			Ip []string `yaml:",flow"`
 		}
+		Domain string
 	}{}
 
 	err := yaml.Unmarshal(b, &conf)
@@ -49,7 +50,7 @@ func main() {
 	}
 
 	gsuiteClient := client.CreateConfig().
-		SetFilename(ClientSecretFileName).
+		SetClientSecretFilename(ClientSecretFileName).
 		SetScopes([]string{
 			client.AdminReportsUsageReadonlyScope.String(),
 			client.AdminReportsAuditReadonlyScope.String(), }).
@@ -139,7 +140,7 @@ func constructPayload(filePath string) string {
 			return payload + "--batch_0123456789--"
 		}
 
-		if strings.Contains(row[5], "@moneyforward.co.jp") && !strings.Contains(payload, row[5]) {
+		if strings.Contains(row[5], "@") && !strings.Contains(payload, row[5]) {
 			payload = payload + header + RequestLine("PUT", row[5]) + "\n\n"
 		}
 	}
