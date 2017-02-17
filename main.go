@@ -10,6 +10,8 @@ import (
 	"github.com/urfave/cli"
 	"sort"
 	"github.com/ken5scal/gsuite_toolkit/actions/reports"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
 )
 
 const (
@@ -18,6 +20,22 @@ const (
 )
 
 func main() {
+	b, e := ioutil.ReadFile("gsuite_config.yml")
+	if e != nil {
+		log.Fatal(e)
+	}
+
+	conf := struct {
+		Office struct {
+			Ip []string `yaml:",flow"`
+		}
+	}{}
+
+	err := yaml.Unmarshal(b, &conf)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
 	app := cli.NewApp()
 	app.Name = "gsuite"
 	app.Usage = "help managing gsuite"
@@ -52,7 +70,7 @@ func main() {
 					Name:  "illegal_login",
 					Usage: "get employees who have not been office for 30 days, but accessing",
 					Action: func(c *cli.Context) error {
-						return reports.GetIllegalLoginUsersAndIp(gsuiteClient)
+						return reports.GetIllegalLoginUsersAndIp(gsuiteClient, conf.Office.Ip)
 					},
 				},
 			},

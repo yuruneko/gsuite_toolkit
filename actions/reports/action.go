@@ -43,7 +43,7 @@ func GetNon2StepVerifiedUsers(client *http.Client) error {
 
 // GetIllegalLoginUsersAndIp
 // Main purpose is to detect employees who have not logged in from office for 30days
-func GetIllegalLoginUsersAndIp(client *http.Client) error {
+func GetIllegalLoginUsersAndIp(client *http.Client, officeIPs []string) error {
 	s, err := reports.NewService(client)
 	if err != nil {
 		return err
@@ -54,8 +54,6 @@ func GetIllegalLoginUsersAndIp(client *http.Client) error {
 	}
 
 	data := make(map[string]*LoginInformation)
-	officeIPs := []string{"124.32.248.42", "210.130.170.193", "210.138.23.111", "210.224.77.186", "118.243.201.33", "122.220.198.115"}
-
 	for _, activity := range activities {
 		email := activity.Actor.Email
 		ip := activity.IpAddress
