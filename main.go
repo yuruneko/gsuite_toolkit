@@ -30,7 +30,12 @@ func main() {
 		return nil
 	}
 
-	clientConfig := client.CreateConfig().SetFilename(ClientSecretFileName)
+	gsuiteClient := client.CreateConfig().
+		SetFilename(ClientSecretFileName).
+		SetScopes([]string{
+			client.AdminReportsUsageReadonlyScope.String(),
+			client.AdminReportsAuditReadonlyScope.String(), }).
+		Build()
 	app.Commands = []cli.Command{
 		{
 			Name: subCommandReport,
@@ -39,23 +44,15 @@ func main() {
 				{
 					Name:  "2sv",
 					Usage: "get employees who have not enabled 2sv",
-					Before: func(context *cli.Context) error {
-						clientConfig.SetScopes([]string{client.AdminReportsUsageReadonlyScope.String()})
-						return nil
-					},
 					Action: func(context *cli.Context) error {
-						return reports.GetNon2StepVerifiedUsers(clientConfig.Build())
+						return reports.GetNon2StepVerifiedUsers(gsuiteClient)
 					},
 				},
 				{
 					Name:  "illegal_login",
 					Usage: "get employees who have not been office for 30 days, but accessing",
-					Before: func(*cli.Context) error {
-						clientConfig.SetScopes([]string{client.AdminReportsAuditReadonlyScope.String()})
-						return nil
-					},
 					Action: func(c *cli.Context) error {
-						return reports.GetIllegalLoginUsersAndIp(clientConfig.Build())
+						return reports.GetIllegalLoginUsersAndIp(gsuiteClient)
 					},
 				},
 			},
@@ -78,7 +75,7 @@ func main() {
 	//	admin.AdminDirectoryOrgUnitScope, admin.AdminDirectoryUserScope,
 	//	report.AdminReportsAuditReadonlyScope, report.AdminReportsUsageReadonlyScope,
 	//}
-	//c := client.NewClient(clientSecretFileName, scopes)
+	//c := gsuite_Client.NewClient(clientSecretFileName, scopes)
 	//goneUsers, err := users.GetUsersWhoHasNotLoggedInFor30Days(c.Client)
 	//if err != nil {
 	//	log.Fatalln(err)
