@@ -26,7 +26,7 @@ func main() {
 	}
 
 	conf := struct {
-		Office struct {
+		Trusted struct {
 			Ip []string `yaml:",flow"`
 		}
 		Domain string
@@ -71,7 +71,7 @@ func main() {
 					Name:  "illegal_login",
 					Usage: "get employees who have not been office for 30 days, but accessing",
 					Action: func(c *cli.Context) error {
-						return reports.GetIllegalLoginUsersAndIp(gsuiteClient, conf.Office.Ip)
+						return reports.GetIllegalLoginUsersAndIp(gsuiteClient, conf.Trusted.Ip)
 					},
 				},
 			},
