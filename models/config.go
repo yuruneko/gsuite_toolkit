@@ -2,7 +2,7 @@ package models
 
 type TomlConfig struct {
 	Owner DomainOwner
-	Network map[string]Network
+	Networks map[string][]Network
 }
 
 type DomainOwner struct {
@@ -12,5 +12,5 @@ type DomainOwner struct {
 
 type Network struct {
 	Name string
-	Ips []string
+	Ip []string
 }

@@ -15,13 +15,18 @@ import (
 	"github.com/ken5scal/gsuite_toolkit/services"
 	reports2 "github.com/ken5scal/gsuite_toolkit/services/reports"
 	"github.com/BurntSushi/toml"
-	"fmt"
+	"github.com/ken5scal/gsuite_toolkit/models"
 )
 
 const (
 	ClientSecretFileName = "client_secret.json"
 	subCommandReport = "report"
 )
+
+type network struct {
+	Name string
+	Ip []string
+}
 
 func main() {
 	b, e := ioutil.ReadFile("gsuite_config.yml")
@@ -41,22 +46,12 @@ func main() {
 		log.Fatalf("error: %v", err)
 	}
 
-	tomlConf := struct {
-		Owner struct{
-			Domain string
-			Organization string
-		}
-		Network []struct{
-			Name string
-			Ip   []string
-		}
-	}{}
+	var tomlConf models.TomlConfig
+
 	_, err = toml.DecodeFile("gsuite_config.toml", &tomlConf)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
-	fmt.Println(tomlConf)
-
 
 	app := cli.NewApp()
 	app.Name = "gsuite"
