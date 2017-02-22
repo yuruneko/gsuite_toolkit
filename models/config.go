@@ -11,7 +11,7 @@ type DomainOwner struct {
 }
 
 type Network struct {
-	Name string
+	Type string
 	Ip []string
 }
 

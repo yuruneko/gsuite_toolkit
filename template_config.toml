@@ -4,29 +4,29 @@ organization = "Your Org"
 
 [networks]
 [[networks.office1]]
-name = "cooperate"
+type = "cooperate"
 ip = ["1.1.1.1", "2.2.2.2", "3.3.3.3"]
 
 [[networks.office1]]
-name = "dmz"
+type = "dmz"
 ip = ["1.1.1.1", "2.2.2.2", "3.3.3.3"]
 
 [[networks.office1]]
-name = "byod"
+type = "byod"
 ip = ["1.1.1.1", "2.2.2.2", "3.3.3.3"]
 
 [[networks.office1]]
-name = "guest"
+type = "guest"
 ip = ["1.1.1.1", "2.2.2.2", "3.3.3.3"]
 
 [[networks.office2]]
-name = "cooperate"
+type = "cooperate"
 ip = ["1.1.1.1", "2.2.2.2", "3.3.3.3"]
 
 [[networks.office2]]
-name = "byod"
+type = "byod"
 ip = ["1.1.1.1", "2.2.2.2", "3.3.3.3"]
 
 [[networks.office2]]
-name = "guest"
+type = "guest"
 ip = ["1.1.1.1", "2.2.2.2", "3.3.3.3"]
