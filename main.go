@@ -14,6 +14,8 @@ import (
 	"io/ioutil"
 	"github.com/ken5scal/gsuite_toolkit/services"
 	reports2 "github.com/ken5scal/gsuite_toolkit/services/reports"
+	"github.com/BurntSushi/toml"
+	"fmt"
 )
 
 const (
@@ -38,6 +40,27 @@ func main() {
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
+
+	tomlConf := struct {
+		//Age int
+		//Cats []string
+		//Pi float64
+		//Perfection []int
+		//DOB time.Time // requires `import time`
+		Owner struct{
+			Domain string
+			Organization string
+		}
+		Network map[string]struct{
+				Ip []string
+		}
+	}{}
+	_, err = toml.DecodeFile("gsuite_config.toml", &tomlConf)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+	fmt.Println(tomlConf)
+
 
 	app := cli.NewApp()
 	app.Name = "gsuite"
