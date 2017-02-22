@@ -81,8 +81,8 @@ func main() {
 			Usage: "get report on your G Suite",
 			UsageText: "Check potential security risks, trace user login activities, audit admin activities, etc",
 			Before: func(*cli.Context) error {
-				service := &reports2.Service{}
-				err := service.NewService(gsuiteClient)
+				s = &reports2.Service{}
+				err := s.(*reports2.Service).NewService(gsuiteClient)
 				return err
 			},
 			Subcommands: []cli.Command{
@@ -101,7 +101,7 @@ func main() {
 					Action: func(c *cli.Context) error {
 						r, err := s.(*reports2.Service).GetLoginActivities(30)
 						handleError(err)
-						return reports.GetIllegalLoginUsersAndIp(r, conf.Trusted.Ip)
+						return reports.GetIllegalLoginUsersAndIp(r, tomlConf.GetAllIps())
 					},
 				},
 			},

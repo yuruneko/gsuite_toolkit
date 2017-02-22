@@ -14,3 +14,13 @@ type Network struct {
 	Name string
 	Ip []string
 }
+
+func (config *TomlConfig) GetAllIps() []string {
+	var allIp []string
+	for _, network := range config.Networks {
+		for _, n := range network {
+			allIp = append(allIp, n.Ip...)
+		}
+	}
+	return allIp
+}
