@@ -42,17 +42,13 @@ func main() {
 	}
 
 	tomlConf := struct {
-		//Age int
-		//Cats []string
-		//Pi float64
-		//Perfection []int
-		//DOB time.Time // requires `import time`
 		Owner struct{
 			Domain string
 			Organization string
 		}
-		Network map[string]struct{
-				Ip []string
+		Network []struct{
+			Name string
+			Ip   []string
 		}
 	}{}
 	_, err = toml.DecodeFile("gsuite_config.toml", &tomlConf)
