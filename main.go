@@ -12,10 +12,10 @@ import (
 	"github.com/ken5scal/gsuite_toolkit/mapper/reports"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"github.com/ken5scal/gsuite_toolkit/services"
-	reports2 "github.com/ken5scal/gsuite_toolkit/services/reports"
+	reportService "github.com/ken5scal/gsuite_toolkit/services/reports"
 	"github.com/BurntSushi/toml"
 	"github.com/ken5scal/gsuite_toolkit/models"
+	"github.com/ken5scal/gsuite_toolkit/services"
 )
 
 const (
@@ -81,8 +81,8 @@ func main() {
 			Usage: "get report on your G Suite",
 			UsageText: "Check potential security risks, trace user login activities, audit admin activities, etc",
 			Before: func(*cli.Context) error {
-				s = &reports2.Service{}
-				err := s.(*reports2.Service).NewService(gsuiteClient)
+				s = &reportService.Service{}
+				err := s.(*reportService.Service).NewService(gsuiteClient)
 				return err
 			},
 			Subcommands: []cli.Command{
@@ -90,7 +90,7 @@ func main() {
 					Name:  "2sv",
 					Usage: "get employees who have not enabled 2sv",
 					Action: func(context *cli.Context) error {
-						r, err := s.(*reports2.Service).Get2StepVerifiedStatusReport()
+						r, err := s.(*reportService.Service).Get2StepVerifiedStatusReport()
 						handleError(err)
 						return reports.GetNon2StepVerifiedUsers(r)
 					},
@@ -99,7 +99,7 @@ func main() {
 					Name:  "illegal_login",
 					Usage: "get employees who have not been office for 30 days, but accessing",
 					Action: func(c *cli.Context) error {
-						r, err := s.(*reports2.Service).GetLoginActivities(30)
+						r, err := s.(*reportService.Service).GetLoginActivities(30)
 						handleError(err)
 						return reports.GetIllegalLoginUsersAndIp(r, tomlConf.GetAllIps())
 					},

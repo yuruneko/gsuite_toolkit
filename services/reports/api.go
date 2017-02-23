@@ -79,13 +79,10 @@ func (s *Service) Get2StepVerifiedStatusReport() (*admin.UsageReports, error) {
 // EX: GetLoginActivities(30)
 func (s *Service) GetLoginActivities(daysAgo int) ([]*admin.Activity, error) {
 	time30DaysAgo := time.Now().Add(-time.Duration(daysAgo) * time.Hour * 24)
-	layout := "2006-01-02T15:04:05.000Z"
-
 	call := s.ActivitiesService.
 		List("all", "login").
 		EventName("login_success").
-		StartTime(time30DaysAgo.Format(layout))
-		//EndTime("2017-02-05T20:35:28.000Z")
+		StartTime(time30DaysAgo.Format(time.RFC3339))
 
 	firstIteration := true
 	token := "justrandomtoken"
