@@ -24,15 +24,15 @@ type Service struct {
 
 // NewService creates instance of Report related Services
 func (s *Service) NewService(client *http.Client) (error) {
-	reportService, err := admin.New(client)
+	srv, err := admin.New(client)
 	if err != nil {
 		return err
 	}
 
-	s.UserUsageReportService = reportService.UserUsageReport
-	s.ActivitiesService = reportService.Activities
-	s.ChannelsService = reportService.Channels
-	s.CustomerUsageReportsService = reportService.CustomerUsageReports
+	s.UserUsageReportService = srv.UserUsageReport
+	s.ActivitiesService = srv.Activities
+	s.ChannelsService = srv.Channels
+	s.CustomerUsageReportsService = srv.CustomerUsageReports
 	s.Client = client
 	return nil
 }

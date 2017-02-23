@@ -13,14 +13,17 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	reportService "github.com/ken5scal/gsuite_toolkit/services/reports"
+	userService "github.com/ken5scal/gsuite_toolkit/services/users"
 	"github.com/BurntSushi/toml"
 	"github.com/ken5scal/gsuite_toolkit/models"
 	"github.com/ken5scal/gsuite_toolkit/services"
+	"fmt"
 )
 
 const (
 	ClientSecretFileName = "client_secret.json"
 	subCommandReport = "report"
+	subCommandLogin = "login"
 )
 
 type network struct {
@@ -68,6 +71,7 @@ func main() {
 	gsuiteClient := client.CreateConfig().
 		SetClientSecretFilename(ClientSecretFileName).
 		SetScopes([]string{
+			client.AdminDirectoryUserScope.String(),
 			client.AdminReportsUsageReadonlyScope.String(),
 			client.AdminReportsAuditReadonlyScope.String(), }).
 		Build()
@@ -76,10 +80,33 @@ func main() {
 
 	app.Commands = []cli.Command{
 		{
+			Name: subCommandLogin,
+			Category: subCommandReport,
+			Usage: "Create user profiles, manage user information, even add administrators.",
+			Before: func(*cli.Context) error {
+				s = &userService.Service{}
+				err := s.NewService(gsuiteClient)
+				return err
+			},
+			Subcommands: []cli.Command{
+				{
+					Name:  "rare-login",
+					Usage: "get employees who have not logged in for a while",
+					Action: func(context *cli.Context) error {
+						r, err := s.(*userService.Service).GetUsersWithRareLogin(30, tomlConf.Owner.DomainName)
+						handleError(err)
+						for _, user := range r {
+							fmt.Println(user.PrimaryEmail)
+						}
+						return err
+					},
+				},
+			},
+		},
+		{
 			Name: subCommandReport,
 			Category: subCommandReport,
-			Usage: "get report on your G Suite",
-			UsageText: "Check potential security risks, trace user login activities, audit admin activities, etc",
+			Usage: "Gain insights on content management with Google Drive activity reports. Audit administrator actions. Generate customer and user usage reports.",
 			Before: func(*cli.Context) error {
 				s = &reportService.Service{}
 				err := s.(*reportService.Service).NewService(gsuiteClient)
@@ -96,7 +123,7 @@ func main() {
 					},
 				},
 				{
-					Name:  "illegal_login",
+					Name:  "untrusted_login",
 					Usage: "get employees who have not been office for 30 days, but accessing",
 					Action: func(c *cli.Context) error {
 						r, err := s.(*reportService.Service).GetLoginActivities(30)
@@ -106,15 +133,24 @@ func main() {
 				},
 			},
 		},
-		{
-			Name: "login",
-			Category: subCommandReport,
-		},
 	}
 
 	sort.Sort(cli.FlagsByName(app.Flags))
 	sort.Sort(cli.CommandsByName(app.Commands))
 	app.Run(os.Args)
+
+	//scopes := []string{
+	//	admin.AdminDirectoryOrgUnitScope, admin.AdminDirectoryUserScope,
+	//	report.AdminReportsAuditReadonlyScope, report.AdminReportsUsageReadonlyScope,
+	//}
+	//c := gsuite_Client.NewClient(clientSecretFileName, scopes)
+	//goneUsers, err := users.GetUsersWithRareLogin(c.Client)
+	//if err != nil {
+	//	log.Fatalln(err)
+	//}
+	//for _, user := range goneUsers {
+	//	fmt.Println(user.PrimaryEmail)
+	//}
 
 	//
 	//payload := constructPayload("/non2SVuser/suzuki/Desktop/org_structure.csv")
