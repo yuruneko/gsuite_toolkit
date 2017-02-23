@@ -138,20 +138,6 @@ func main() {
 	sort.Sort(cli.FlagsByName(app.Flags))
 	sort.Sort(cli.CommandsByName(app.Commands))
 	app.Run(os.Args)
-
-	//scopes := []string{
-	//	admin.AdminDirectoryOrgUnitScope, admin.AdminDirectoryUserScope,
-	//	report.AdminReportsAuditReadonlyScope, report.AdminReportsUsageReadonlyScope,
-	//}
-	//c := gsuite_Client.NewClient(clientSecretFileName, scopes)
-	//goneUsers, err := users.GetUsersWithRareLogin(c.Client)
-	//if err != nil {
-	//	log.Fatalln(err)
-	//}
-	//for _, user := range goneUsers {
-	//	fmt.Println(user.PrimaryEmail)
-	//}
-
 	//
 	//payload := constructPayload("/non2SVuser/suzuki/Desktop/org_structure.csv")
 	//fmt.Println(payload)
