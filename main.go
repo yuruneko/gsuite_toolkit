@@ -106,7 +106,6 @@ func main() {
 						if err != nil {
 							return err
 						}
-						fmt.Println("Files:")
 						if len(r.Files) > 0 {
 							for _, i := range r.Files {
 								fmt.Printf("%s (%s)\n", i.Name, i.Id)
