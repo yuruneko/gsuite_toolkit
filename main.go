@@ -77,7 +77,7 @@ func main() {
 			client.AdminDirectoryUserScope.String(),
 			client.AdminReportsUsageReadonlyScope.String(),
 			client.AdminReportsAuditReadonlyScope.String(),
-			client.DriveReadonlyScope.String()}).
+			client.DriveMetadataReadonlyScope.String()}).
 		Build()
 
 	var s services.Service

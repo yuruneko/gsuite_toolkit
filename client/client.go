@@ -25,7 +25,7 @@ const (
 	AdminReportsAuditReadonlyScope
 	AdminDirectoryOrgUnitScope
 	AdminDirectoryUserScope
-	DriveReadonlyScope
+	DriveMetadataReadonlyScope
 )
 
 func (scope Scope) String() string {
@@ -38,7 +38,7 @@ func (scope Scope) String() string {
 		return admin.AdminDirectoryOrgunitScope
 	case AdminDirectoryUserScope:
 		return admin.AdminDirectoryUserScope
-	case DriveReadonlyScope:
+	case DriveMetadataReadonlyScope:
 		return drive.DriveMetadataReadonlyScope
 	default:
 		return "" //Nothing
