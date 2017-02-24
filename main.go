@@ -18,13 +18,15 @@ import (
 	"github.com/ken5scal/gsuite_toolkit/services"
 	"fmt"
 	"errors"
+	"net/http"
 )
 
 const (
 	ClientSecretFileName = "client_secret.json"
-	subCommandReport = "report"
-	subCommandLogin = "login"
-	subCommandDrive = "drive"
+	CommandReport        = "report"
+	CommandLogin         = "login"
+	CommandDrive         = "drive"
+	CommandSetup         = "setup"
 )
 
 type network struct {
@@ -34,6 +36,8 @@ type network struct {
 
 func main() {
 	var tomlConf models.TomlConfig
+	var s services.Service
+	var gsuiteClient *http.Client
 
 	_, err := toml.DecodeFile("gsuite_config.toml", &tomlConf)
 	if err != nil {
@@ -52,22 +56,19 @@ func main() {
 		return nil
 	}
 
-	gsuiteClient := client.CreateConfig().
+	gsuiteClient, err = client.CreateConfig().
 		SetClientSecretFilename(ClientSecretFileName).
 		SetScopes([]string{
-			client.AdminDirectoryUserScope.String(),
-			client.AdminReportsUsageReadonlyScope.String(),
-			client.AdminReportsAuditReadonlyScope.String(),
-			client.DriveMetadataReadonlyScope.String()}).
+		client.AdminDirectoryUserScope.String(),
+		client.AdminReportsUsageReadonlyScope.String(),
+		client.AdminReportsAuditReadonlyScope.String(),
+		client.DriveMetadataReadonlyScope.String(), }).
 		Build()
-
-	var s services.Service
-
 	app.Commands = []cli.Command{
 		{
-			Name: subCommandDrive,
-			Category: subCommandDrive,
-			Usage: "Audit files within Google Drive.",
+			Name:     CommandDrive,
+			Category: CommandDrive,
+			Usage:    "Audit files within Google Drive.",
 			Before: func(*cli.Context) error {
 				s = driveService.Init()
 				err := s.SetClient(gsuiteClient)
@@ -100,10 +101,14 @@ func main() {
 			},
 		},
 		{
-			Name: subCommandLogin,
-			Category: subCommandReport,
-			Usage: "Create user profiles, manage user information, even add administrators.",
+			Name:     CommandLogin,
+			Category: CommandLogin,
+			Usage:    "Create user profiles, manage user information, even add administrators.",
 			Before: func(*cli.Context) error {
+				if gsuiteClient == nil {
+					return errors.New("No Client. Execute `gsuite_tookit setup`")
+				}
+
 				s = userService.Init()
 				err := s.SetClient(gsuiteClient)
 				return err
@@ -126,9 +131,9 @@ func main() {
 			},
 		},
 		{
-			Name: subCommandReport,
-			Category: subCommandReport,
-			Usage: "Gain insights on content management with Google Drive activity reports. Audit administrator actions. Generate customer and user usage reports.",
+			Name:     CommandReport,
+			Category: CommandReport,
+			Usage:    "Gain insights on content management with Google Drive activity reports. Audit administrator actions. Generate customer and user usage reports.",
 			Before: func(*cli.Context) error {
 				s = reportService.Init()
 				err := s.(*reportService.Service).SetClient(gsuiteClient)

@@ -16,6 +16,7 @@ import (
 	report "google.golang.org/api/admin/reports/v1"
 	admin "google.golang.org/api/admin/directory/v1"
 	"google.golang.org/api/drive/v3"
+	"errors"
 )
 
 type Scope int
@@ -72,21 +73,21 @@ func (config *ClientConfig) setDomain(domainName string) *ClientConfig {
 }
 
 // NewClient Generate New Client
-func (config *ClientConfig) Build() *http.Client {
+func (config *ClientConfig) Build() (*http.Client, error) {
 	b, err := ioutil.ReadFile(config.clientSecretFileName)
 	if err != nil {
-		log.Fatalf("Unable to read client secret file: %v", err)
+		return nil, errors.New(fmt.Sprintf("Unable to read client secret file: %v", err))
 	}
 
 	// If modifying these scopes, delete your previously saved credentials
 	// at ~/.credentials/admin-directory_v1-go-quickstart.json
 	c, err := google.ConfigFromJSON(b, config.scopes...)
 	if err != nil {
-		log.Fatalf("Unable to parse client secret file to config: %v", err)
+		return nil, errors.New(fmt.Sprintf("Unable to parse client secret file to config: %v", err))
 	}
 
 	token := getToken(c)
-	return c.Client(context.Background(), token)
+	return c.Client(context.Background(), token), nil
 }
 
 func getToken(config *oauth2.Config) *oauth2.Token {
