@@ -14,16 +14,19 @@ import (
 	"io/ioutil"
 	reportService "github.com/ken5scal/gsuite_toolkit/services/reports"
 	userService "github.com/ken5scal/gsuite_toolkit/services/users"
+	driveService "github.com/ken5scal/gsuite_toolkit/services/drives"
 	"github.com/BurntSushi/toml"
 	"github.com/ken5scal/gsuite_toolkit/models"
 	"github.com/ken5scal/gsuite_toolkit/services"
 	"fmt"
+	"errors"
 )
 
 const (
 	ClientSecretFileName = "client_secret.json"
 	subCommandReport = "report"
 	subCommandLogin = "login"
+	subCommandDrive = "drive"
 )
 
 type network struct {
@@ -73,12 +76,47 @@ func main() {
 		SetScopes([]string{
 			client.AdminDirectoryUserScope.String(),
 			client.AdminReportsUsageReadonlyScope.String(),
-			client.AdminReportsAuditReadonlyScope.String(), }).
+			client.AdminReportsAuditReadonlyScope.String(),
+			client.DriveMetadataReadonlyScope.String()}).
 		Build()
 
 	var s services.Service
 
 	app.Commands = []cli.Command{
+		{
+			Name: subCommandDrive,
+			Category: subCommandDrive,
+			Usage: "Audit files within Google Drive.",
+			Before: func(*cli.Context) error {
+				s = &driveService.Service{}
+				err := s.NewService(gsuiteClient)
+				return err
+			},
+			Subcommands: []cli.Command{
+				{
+					Name:  "list",
+					Usage: "get all Files",
+					Action: func(context *cli.Context) error {
+						s, ok := s.(*driveService.Service)
+						if !ok {
+							handleError(errors.New(fmt.Sprintf("Invalid type: %T", s)))
+						}
+
+						r, err := s.GetFiles()
+						handleError(err)
+						fmt.Println("Files:")
+						if len(r.Files) > 0 {
+							for _, i := range r.Files {
+								fmt.Printf("%s (%s)\n", i.Name, i.Id)
+							}
+						} else {
+							fmt.Println("No files found.")
+						}
+						return err
+					},
+				},
+			},
+		},
 		{
 			Name: subCommandLogin,
 			Category: subCommandReport,
