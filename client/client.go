@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	report "google.golang.org/api/admin/reports/v1"
 	admin "google.golang.org/api/admin/directory/v1"
+	"google.golang.org/api/drive/v3"
 )
 
 type Scope int
@@ -24,6 +25,7 @@ const (
 	AdminReportsAuditReadonlyScope
 	AdminDirectoryOrgUnitScope
 	AdminDirectoryUserScope
+	DriveMetadataReadonlyScope
 )
 
 func (scope Scope) String() string {
@@ -36,6 +38,8 @@ func (scope Scope) String() string {
 		return admin.AdminDirectoryOrgunitScope
 	case AdminDirectoryUserScope:
 		return admin.AdminDirectoryUserScope
+	case DriveMetadataReadonlyScope:
+		return drive.DriveMetadataReadonlyScope
 	default:
 		return "" //Nothing
 	}
