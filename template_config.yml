@@ -1,0 +1,5 @@
+trusted:
+    ip:
+        - xxx.xxx.xxx.xxx
+        - yyy.yyy.yyy.yyy
+domain: yourdomain.com

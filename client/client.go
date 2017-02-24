@@ -13,36 +13,80 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	report "google.golang.org/api/admin/reports/v1"
+	admin "google.golang.org/api/admin/directory/v1"
+	"google.golang.org/api/drive/v3"
 )
 
+type Scope int
+
+const (
+	AdminReportsUsageReadonlyScope Scope = iota
+	AdminReportsAuditReadonlyScope
+	AdminDirectoryOrgUnitScope
+	AdminDirectoryUserScope
+	DriveMetadataReadonlyScope
+)
+
+func (scope Scope) String() string {
+	switch scope {
+	case AdminReportsUsageReadonlyScope:
+		return report.AdminReportsUsageReadonlyScope
+	case AdminReportsAuditReadonlyScope:
+		return report.AdminReportsAuditReadonlyScope
+	case AdminDirectoryOrgUnitScope:
+		return admin.AdminDirectoryOrgunitScope
+	case AdminDirectoryUserScope:
+		return admin.AdminDirectoryUserScope
+	case DriveMetadataReadonlyScope:
+		return drive.DriveMetadataReadonlyScope
+	default:
+		return "" //Nothing
+	}
+}
+
 // Client to Carry out Admin job in GSuite
-type Client struct {
-	*http.Client
+type ClientConfig struct {
+	clientSecretFileName string
+	scopes               []string
+	domainName string
+}
+
+func CreateConfig() *ClientConfig {
+	return &ClientConfig{}
+}
+
+func (config *ClientConfig) SetClientSecretFilename(clientSecretFileName string) *ClientConfig {
+	config.clientSecretFileName = clientSecretFileName
+	return config
+}
+
+func (config *ClientConfig) SetScopes(scopes []string) *ClientConfig {
+	config.scopes = scopes
+	return config
+}
+
+func (config *ClientConfig) setDomain(domainName string) *ClientConfig {
+	config.domainName = domainName
+	return config
 }
 
 // NewClient Generate New Client
-func NewClient(fileName string, scopes []string) *Client {
-	b, err := ioutil.ReadFile(fileName)
+func (config *ClientConfig) Build() *http.Client {
+	b, err := ioutil.ReadFile(config.clientSecretFileName)
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
 	}
 
 	// If modifying these scopes, delete your previously saved credentials
 	// at ~/.credentials/admin-directory_v1-go-quickstart.json
-	config, err := google.ConfigFromJSON(b, scopes...)
+	c, err := google.ConfigFromJSON(b, config.scopes...)
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
 
-	token := getToken(config)
-
-	client := &Client{
-		Client: config.Client(context.Background(), token),
-	}
-
-
-
-	return client
+	token := getToken(c)
+	return c.Client(context.Background(), token)
 }
 
 func getToken(config *oauth2.Config) *oauth2.Token {

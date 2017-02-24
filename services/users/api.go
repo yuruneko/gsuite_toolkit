@@ -14,20 +14,27 @@ type Service struct {
 	*http.Client
 }
 
-// NewService creates instance of User related Services
-func NewService(client *http.Client) (*Service, error) {
+// Initialize Service
+func Init() (s *Service) {
+	return &Service{}
+}
+
+// SetClient creates instance of User related Services
+func (s *Service) SetClient(client *http.Client) (error) {
 	srv, err := admin.New(client)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return &Service{srv.Users, client}, nil
+	s.UsersService = srv.Users
+	s.Client = client
+	return nil
 }
 
 // GetEmployees retrieves employees from Gsuite organization.
 // By Default customer key should be "my_customer"
 // max shoudl be integer lower than 500
-func (service *Service) GetEmployees(customer, key string, max int64) (*admin.Users, error) {
-	return service.UsersService.
+func (s *Service) GetEmployees(customer, key string, max int64) (*admin.Users, error) {
+	return s.UsersService.
 		List().
 		Customer(customer).
 		OrderBy(key).
@@ -38,8 +45,8 @@ func (service *Service) GetEmployees(customer, key string, max int64) (*admin.Us
 // GetAllUsersInDomain retrieves all users in domain.
 // GET https://www.googleapis.com/admin/directory/v1/users?domain=example.com&maxResults=2
 // Example: GetAllUsersInDomain("hoge.co.jp", "[email, familyname, givenname]", 500)
-func (service *Service) GetAllUsersInDomain(domain string, max int64) (*admin.Users, error) {
-	return service.UsersService.
+func (s *Service) GetAllUsersInDomain(domain string, max int64) (*admin.Users, error) {
+	return s.UsersService.
 		List().
 		Domain(domain).
 		OrderBy("email").
@@ -50,30 +57,25 @@ func (service *Service) GetAllUsersInDomain(domain string, max int64) (*admin.Us
 // GetUser retrieves a user based on either email or userID
 // GET https://www.googleapis.com/admin/directory/v1/users/userKey
 // Example: GetUser("abc@abc.co.jp")
-func (service *Service) GetUser(key string) (*admin.User, error) {
-	return service.UsersService.Get(key).ViewType("domain_public").Do()
+func (s *Service) GetUser(key string) (*admin.User, error) {
+	return s.UsersService.Get(key).ViewType("domain_public").Do()
 }
 
 // ChangeOrgUnit changes user's OrgUnit.
 // PUT https://www.googleapis.com/admin/directory/v1/users/{email/userID}
 // Example: ChangeOrgUnit(user, "社員・委託社員・派遣社員・アルバイト")
-func (service *Service) ChangeOrgUnit(user *admin.User, unit string) (*admin.User, error) {
+func (s *Service) ChangeOrgUnit(user *admin.User, unit string) (*admin.User, error) {
 	user.OrgUnitPath = "/" + unit
-	return service.UsersService.Update(user.PrimaryEmail, user).Do()
+	return s.UsersService.Update(user.PrimaryEmail, user).Do()
 }
 
-func GetUsersWhoHasNotLoggedInFor30Days(c *http.Client) ([]*admin.User, error) {
-	u, err := NewService(c)
+func (s *Service) GetUsersWithRareLogin(days int, domain string) ([]*admin.User, error) {
+	users, err := s.GetAllUsersInDomain(domain, 500)
 	if err != nil {
 		return nil, err
 	}
 
-	users, err := u.GetAllUsersInDomain("moneyforward.co.jp", 500)
-	if err != nil {
-		return nil, err
-	}
-
-	time30DaysAgo := time.Now().Add(-time.Duration(30) * time.Hour * 24)
+	time30DaysAgo := time.Now().Add(-time.Duration(days) * time.Hour * 24)
 
 	var goneUsers []*admin.User
 	for _, user := range users.Users {

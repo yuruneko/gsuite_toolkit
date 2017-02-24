@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 	"strings"
+	"google.golang.org/api/googleapi"
 )
 
 // Service provides following functions.
@@ -21,22 +22,27 @@ type Service struct {
 	*http.Client
 }
 
-// NewService creates instance of Report related Services
-func NewService(client *http.Client) (*Service, error) {
-	reportService, err := admin.New(client)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Service{
-		reportService.UserUsageReport,
-		reportService.Activities,
-		reportService.Channels,
-		reportService.CustomerUsageReports,
-		client}, nil
+// Initialize Service
+func Init() (s *Service) {
+	return &Service{}
 }
 
-// GetUserUsage returns G Suite service activities across your account's users
+// SetClient creates instance of Report related Services
+func (s *Service) SetClient(client *http.Client) (error) {
+	srv, err := admin.New(client)
+	if err != nil {
+		return err
+	}
+
+	s.UserUsageReportService = srv.UserUsageReport
+	s.ActivitiesService = srv.Activities
+	s.ChannelsService = srv.Channels
+	s.CustomerUsageReportsService = srv.CustomerUsageReports
+	s.Client = client
+	return nil
+}
+
+// GetUserUsage returns G Suite service activities across your account's Users
 // key should be either "all" or primary id
 // params should be one or combination of user report parameters
 // https://developers.google.com/admin-sdk/reports/v1/guides/manage-usage-users
@@ -48,43 +54,40 @@ func (s *Service) GetUserUsage(key, date, params string) (*admin.UsageReports, e
 		Do()
 }
 
-// GetNon2StepVerifiedUsers returns emails of users who have not yet enabled 2 step verification.
+// Get2StepVerifiedStatusReport returns reports about 2 step verification status.
 // date Must be in ISO 8601 format, yyyy-mm-dd
-// Example: GetNon2StepVerifiedUsers("2017-01-01")
-func (s *Service) GetNon2StepVerifiedUsers() (*users, error) {
+// https://developers.google.com/admin-sdk/reports/v1/guides/manage-usage-users
+// Example: Get2StepVerifiedStatusReport("2017-01-01")
+func (s *Service) Get2StepVerifiedStatusReport() (*admin.UsageReports, error) {
 	var usageReports *admin.UsageReports
 	var err error
 	max_retry := 10
 
+	var timeStamp time.Time
 	for i := 0; i < max_retry; i++ {
-		t := time.Now().Add(-time.Duration(time.Duration(i) * time.Hour * 24))
-		ts := strings.Split(t.Format(time.RFC3339), "T") // yyyy-mm-dd
+		timeStamp = time.Now().Add(-time.Duration(time.Duration(i) * time.Hour * 24))
+		ts := strings.Split(timeStamp.Format(time.RFC3339), "T") // yyyy-mm-dd
 		usageReports, err = s.GetUserUsage("all", ts[0], "accounts:is_2sv_enrolled")
-		if err == nil {
+		if e, ok := err.(*googleapi.Error); ok {
+			if e.Code == http.StatusForbidden {
+				return nil, err
+			}
+		} else if err == nil {
 			break
 		}
 	}
-
-	users := &users{len(usageReports.UsageReports), make([]*admin.UsageReport, 0)}
-
-	for _, r := range usageReports.UsageReports {
-		if !r.Parameters[0].BoolValue {
-			users.Users = append(users.Users, r)
-		}
-	}
-	return users, err
+	return usageReports, err
 }
 
-// GetLoginActivities reports login activities of all users within organization
-func (s *Service) GetLoginActivities() ([]*admin.Activity, error) {
-	time30DaysAgo := time.Now().Add(-time.Duration(30) * time.Hour * 24)
-	layout := "2006-01-02T15:04:05.000Z"
-
+// GetLoginActivities reports login activities of all Users within organization
+// daysAgo: number of past days you are interested from present time
+// EX: GetLoginActivities(30)
+func (s *Service) GetLoginActivities(daysAgo int) ([]*admin.Activity, error) {
+	time30DaysAgo := time.Now().Add(-time.Duration(daysAgo) * time.Hour * 24)
 	call := s.ActivitiesService.
 		List("all", "login").
 		EventName("login_success").
-		StartTime(time30DaysAgo.Format(layout))
-		//EndTime("2017-02-05T20:35:28.000Z")
+		StartTime(time30DaysAgo.Format(time.RFC3339))
 
 	firstIteration := true
 	token := "justrandomtoken"
@@ -103,57 +106,4 @@ func (s *Service) GetLoginActivities() ([]*admin.Activity, error) {
 	}
 
 	return activityList, nil
-}
-
-type LoginInformation struct {
-	Email       string
-	OfficeLogin bool
-	LoginIPs    []string
-}
-
-// GetEmployeesNotLogInFromOfficeIP
-// Main purpose is to detect employees who have not logged in from office for 30days
-func (s *Service) GetEmployeesNotLogInFromOfficeIP() (map[string]*LoginInformation, error) {
-	data := make(map[string]*LoginInformation)
-	officeIPs := []string{"124.32.248.42", "210.130.170.193", "210.138.23.111", "210.224.77.186", "118.243.201.33", "122.220.198.115"}
-
-	activities, err := s.GetLoginActivities()
-	if err != nil {
-		return nil, err
-	}
-	for _, activity := range activities {
-		email := activity.Actor.Email
-		ip := activity.IpAddress
-
-		if value, ok := data[email]; ok {
-			if !value.OfficeLogin {
-				// If an user has logged in from not verified IP so far
-				// then check if new IP is the one from office or not.
-				value.OfficeLogin = containIP(officeIPs, ip)
-			}
-			value.LoginIPs = append(value.LoginIPs, ip)
-		} else {
-			data[email] = &LoginInformation{
-				email,
-				containIP(officeIPs, ip),
-				[]string{ip}}
-		}
-	}
-
-	return data, nil
-}
-
-func containIP(ips []string, ip string) bool {
-	set := make(map[string]struct{}, len(ips))
-	for _, s := range ips {
-		set[s] = struct{}{}
-	}
-
-	_, ok := set[ip]
-	return ok
-}
-
-type users struct {
-	TotalUser     int
-	Users []*admin.UsageReport
 }

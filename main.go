@@ -2,81 +2,176 @@ package main
 
 import (
 	"log"
-
 	"github.com/ken5scal/gsuite_toolkit/client"
-
 	"encoding/csv"
-	"fmt"
-	admin "google.golang.org/api/admin/directory/v1"
-	report "google.golang.org/api/admin/reports/v1"
 	"io"
 	"os"
 	"strings"
-	"github.com/ken5scal/gsuite_toolkit/services/users"
-	"github.com/ken5scal/gsuite_toolkit/services/reports"
 	"github.com/urfave/cli"
+	"sort"
+	"github.com/ken5scal/gsuite_toolkit/mapper/reports"
+	reportService "github.com/ken5scal/gsuite_toolkit/services/reports"
+	userService "github.com/ken5scal/gsuite_toolkit/services/users"
+	driveService "github.com/ken5scal/gsuite_toolkit/services/drives"
+	"github.com/BurntSushi/toml"
+	"github.com/ken5scal/gsuite_toolkit/models"
+	"github.com/ken5scal/gsuite_toolkit/services"
+	"fmt"
+	"errors"
 )
 
 const (
-	clientSecretFileName = "client_secret.json"
+	ClientSecretFileName = "client_secret.json"
+	subCommandReport = "report"
+	subCommandLogin = "login"
+	subCommandDrive = "drive"
 )
 
+type network struct {
+	Name string
+	Ip []string
+}
+
 func main() {
+	var tomlConf models.TomlConfig
+
+	_, err := toml.DecodeFile("gsuite_config.toml", &tomlConf)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
 	app := cli.NewApp()
 	app.Name = "gsuite"
 	app.Usage = "help managing gsuite"
+	app.Version = "0.1"
+	app.Authors = []cli.Author{{Name: "Kengo Suzuki", Email:"kengoscal@gmai.com"}}
 	app.Action  = func(c *cli.Context) error {
-		fmt.Println("Test result")
-		fmt.Printf("Hello %q", c.Args().Get(0))
+		if c.NArg() == 0 {
+			cli.ShowAppHelp(c)
+		}
 		return nil
 	}
-	app.Flags = []cli.Flag{
-		cli.StringFlag{
-			"lang",
-			"english",
-			"language for the greeting",
+
+	gsuiteClient := client.CreateConfig().
+		SetClientSecretFilename(ClientSecretFileName).
+		SetScopes([]string{
+			client.AdminDirectoryUserScope.String(),
+			client.AdminReportsUsageReadonlyScope.String(),
+			client.AdminReportsAuditReadonlyScope.String(),
+			client.DriveMetadataReadonlyScope.String()}).
+		Build()
+
+	var s services.Service
+
+	app.Commands = []cli.Command{
+		{
+			Name: subCommandDrive,
+			Category: subCommandDrive,
+			Usage: "Audit files within Google Drive.",
+			Before: func(*cli.Context) error {
+				s = driveService.Init()
+				err := s.SetClient(gsuiteClient)
+				return err
+			},
+			Subcommands: []cli.Command{
+				{
+					Name:  "list",
+					Usage: "get all Files",
+					Action: func(context *cli.Context) error {
+						s, ok := s.(*driveService.Service)
+						if !ok {
+							return errors.New(fmt.Sprintf("Invalid type: %T", s))
+						}
+
+						r, err := s.GetFiles()
+						if err != nil {
+							return err
+						}
+						if len(r.Files) > 0 {
+							for _, i := range r.Files {
+								fmt.Printf("%s (%s)\n", i.Name, i.Id)
+							}
+						} else {
+							fmt.Println("No files found.")
+						}
+						return err
+					},
+				},
+			},
+		},
+		{
+			Name: subCommandLogin,
+			Category: subCommandReport,
+			Usage: "Create user profiles, manage user information, even add administrators.",
+			Before: func(*cli.Context) error {
+				s = userService.Init()
+				err := s.SetClient(gsuiteClient)
+				return err
+			},
+			Subcommands: []cli.Command{
+				{
+					Name:  "rare-login",
+					Usage: "get employees who have not logged in for a while",
+					Action: func(context *cli.Context) error {
+						r, err := s.(*userService.Service).GetUsersWithRareLogin(30, tomlConf.Owner.DomainName)
+						if err != nil {
+							return err
+						}
+						for _, user := range r {
+							fmt.Println(user.PrimaryEmail)
+						}
+						return nil
+					},
+				},
+			},
+		},
+		{
+			Name: subCommandReport,
+			Category: subCommandReport,
+			Usage: "Gain insights on content management with Google Drive activity reports. Audit administrator actions. Generate customer and user usage reports.",
+			Before: func(*cli.Context) error {
+				s = reportService.Init()
+				err := s.(*reportService.Service).SetClient(gsuiteClient)
+				return err
+			},
+			Subcommands: []cli.Command{
+				{
+					Name:  "2sv",
+					Usage: "get employees who have not enabled 2sv",
+					Action: func(context *cli.Context) error {
+						r, err := s.(*reportService.Service).Get2StepVerifiedStatusReport()
+						if err != nil {
+							return err
+						}
+						err = reports.GetNon2StepVerifiedUsers(r)
+						if err != nil {
+							return err
+						}
+						return nil
+					},
+				},
+				{
+					Name:  "untrusted_login",
+					Usage: "get employees who have not been office for 30 days, but accessing",
+					Action: func(c *cli.Context) error {
+						r, err := s.(*reportService.Service).GetLoginActivities(30)
+						if err != nil {
+							return err
+						}
+						err = reports.GetIllegalLoginUsersAndIp(r, tomlConf.GetAllIps())
+						if err != nil {
+							return err
+						}
+						return nil
+					},
+				},
+			},
 		},
 	}
+
+	sort.Sort(cli.FlagsByName(app.Flags))
+	sort.Sort(cli.CommandsByName(app.Commands))
 	app.Run(os.Args)
-
-	scopes := []string{
-		admin.AdminDirectoryOrgunitScope, admin.AdminDirectoryUserScope,
-		report.AdminReportsAuditReadonlyScope, report.AdminReportsUsageReadonlyScope,
-	}
-	c := client.NewClient(clientSecretFileName, scopes)
-	goneUsers, err := users.GetUsersWhoHasNotLoggedInFor30Days(c.Client)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	for _, user := range goneUsers {
-		fmt.Println(user.PrimaryEmail)
-	}
-
-
-	s, err := reports.NewService(c.Client)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	loginData, _ := s.GetEmployeesNotLogInFromOfficeIP()
-
-	for key, value := range loginData {
-		if !value.OfficeLogin {
-			fmt.Println(key)
-			fmt.Print("     IP: ")
-			fmt.Println(value.LoginIPs)
-		}
-	}
-
-	non2SVuser, err := s.GetNon2StepVerifiedUsers()
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	for _, user := range non2SVuser.Users {
-		fmt.Println(user.Entity.UserEmail)
-	}
-
 	//
 	//payload := constructPayload("/non2SVuser/suzuki/Desktop/org_structure.csv")
 	//fmt.Println(payload)
@@ -114,7 +209,7 @@ func constructPayload(filePath string) string {
 			return payload + "--batch_0123456789--"
 		}
 
-		if strings.Contains(row[5], "@moneyforward.co.jp") && !strings.Contains(payload, row[5]) {
+		if strings.Contains(row[5], "@") && !strings.Contains(payload, row[5]) {
 			payload = payload + header + RequestLine("PUT", row[5]) + "\n\n"
 		}
 	}

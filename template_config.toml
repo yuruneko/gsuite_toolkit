@@ -1,0 +1,32 @@
+[owner]
+domain = "yourdomain.co.jp"
+organization = "Your Org"
+
+[networks]
+[[networks.office1]]
+type = "cooperate"
+ip = ["1.1.1.1", "2.2.2.2", "3.3.3.3"]
+
+[[networks.office1]]
+type = "dmz"
+ip = ["1.1.1.1", "2.2.2.2", "3.3.3.3"]
+
+[[networks.office1]]
+type = "byod"
+ip = ["1.1.1.1", "2.2.2.2", "3.3.3.3"]
+
+[[networks.office1]]
+type = "guest"
+ip = ["1.1.1.1", "2.2.2.2", "3.3.3.3"]
+
+[[networks.office2]]
+type = "cooperate"
+ip = ["1.1.1.1", "2.2.2.2", "3.3.3.3"]
+
+[[networks.office2]]
+type = "byod"
+ip = ["1.1.1.1", "2.2.2.2", "3.3.3.3"]
+
+[[networks.office2]]
+type = "guest"
+ip = ["1.1.1.1", "2.2.2.2", "3.3.3.3"]
