@@ -18,11 +18,11 @@ func Init() (s *Service) {
 	return &Service{}
 }
 
-// NewService sets a client
-func (s *Service) NewService(client *http.Client) (error) {
+// SetClient sets a client
+func (s *Service) SetClient(client *http.Client) (error) {
 	srv, err := drive.New(client)
 	if err != nil {
-		return nil
+		return err
 	}
 	s.FilesService = srv.Files
 
@@ -30,6 +30,7 @@ func (s *Service) NewService(client *http.Client) (error) {
 	return nil
 }
 
+// GetFiles retrieve all files within the domain
 func (s *Service) GetFiles() (*drive.FileList, error) {
 	return s.FilesService.
 		List().

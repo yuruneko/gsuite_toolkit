@@ -15,7 +15,7 @@ type Service struct {
 	*http.Client
 }
 
-// NewService creates instance of Organization related Services
+// SetClient creates instance of Organization related Services
 func NewService(client *http.Client) (*Service, error) {
 	srv, err := admin.New(client)
 	if err != nil {

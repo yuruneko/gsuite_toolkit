@@ -88,8 +88,8 @@ func main() {
 			Category: subCommandDrive,
 			Usage: "Audit files within Google Drive.",
 			Before: func(*cli.Context) error {
-				s = &driveService.Service{}
-				err := s.NewService(gsuiteClient)
+				s = driveService.Init()
+				err := s.SetClient(gsuiteClient)
 				return err
 			},
 			Subcommands: []cli.Command{
@@ -124,8 +124,8 @@ func main() {
 			Category: subCommandReport,
 			Usage: "Create user profiles, manage user information, even add administrators.",
 			Before: func(*cli.Context) error {
-				s = &userService.Service{}
-				err := s.NewService(gsuiteClient)
+				s = userService.Init()
+				err := s.SetClient(gsuiteClient)
 				return err
 			},
 			Subcommands: []cli.Command{
@@ -150,8 +150,8 @@ func main() {
 			Category: subCommandReport,
 			Usage: "Gain insights on content management with Google Drive activity reports. Audit administrator actions. Generate customer and user usage reports.",
 			Before: func(*cli.Context) error {
-				s = &reportService.Service{}
-				err := s.(*reportService.Service).NewService(gsuiteClient)
+				s = reportService.Init()
+				err := s.(*reportService.Service).SetClient(gsuiteClient)
 				return err
 			},
 			Subcommands: []cli.Command{

@@ -22,8 +22,13 @@ type Service struct {
 	*http.Client
 }
 
-// NewService creates instance of Report related Services
-func (s *Service) NewService(client *http.Client) (error) {
+// Initialize Service
+func Init() (s *Service) {
+	return &Service{}
+}
+
+// SetClient creates instance of Report related Services
+func (s *Service) SetClient(client *http.Client) (error) {
 	srv, err := admin.New(client)
 	if err != nil {
 		return err
