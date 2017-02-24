@@ -77,7 +77,7 @@ func main() {
 			client.AdminDirectoryUserScope.String(),
 			client.AdminReportsUsageReadonlyScope.String(),
 			client.AdminReportsAuditReadonlyScope.String(),
-			client.DriveMetadataReadonlyScope.String()}).
+			client.DriveReadonlyScope.String()}).
 		Build()
 
 	var s services.Service
@@ -99,11 +99,13 @@ func main() {
 					Action: func(context *cli.Context) error {
 						s, ok := s.(*driveService.Service)
 						if !ok {
-							handleError(errors.New(fmt.Sprintf("Invalid type: %T", s)))
+							return errors.New(fmt.Sprintf("Invalid type: %T", s))
 						}
 
 						r, err := s.GetFiles()
-						handleError(err)
+						if err != nil {
+							return err
+						}
 						fmt.Println("Files:")
 						if len(r.Files) > 0 {
 							for _, i := range r.Files {
@@ -132,11 +134,13 @@ func main() {
 					Usage: "get employees who have not logged in for a while",
 					Action: func(context *cli.Context) error {
 						r, err := s.(*userService.Service).GetUsersWithRareLogin(30, tomlConf.Owner.DomainName)
-						handleError(err)
+						if err != nil {
+							return err
+						}
 						for _, user := range r {
 							fmt.Println(user.PrimaryEmail)
 						}
-						return err
+						return nil
 					},
 				},
 			},
@@ -156,8 +160,14 @@ func main() {
 					Usage: "get employees who have not enabled 2sv",
 					Action: func(context *cli.Context) error {
 						r, err := s.(*reportService.Service).Get2StepVerifiedStatusReport()
-						handleError(err)
-						return reports.GetNon2StepVerifiedUsers(r)
+						if err != nil {
+							return err
+						}
+						err = reports.GetNon2StepVerifiedUsers(r)
+						if err != nil {
+							return err
+						}
+						return nil
 					},
 				},
 				{
@@ -165,8 +175,14 @@ func main() {
 					Usage: "get employees who have not been office for 30 days, but accessing",
 					Action: func(c *cli.Context) error {
 						r, err := s.(*reportService.Service).GetLoginActivities(30)
-						handleError(err)
-						return reports.GetIllegalLoginUsersAndIp(r, tomlConf.GetAllIps())
+						if err != nil {
+							return err
+						}
+						err = reports.GetIllegalLoginUsersAndIp(r, tomlConf.GetAllIps())
+						if err != nil {
+							return err
+						}
+						return nil
 					},
 				},
 			},
@@ -227,10 +243,4 @@ func RequestLine(method string, email string) string {
 
 func Body() string {
 	return "{\n" + "\"orgUnitPath\": \"/社員・委託社員・派遣社員・アルバイト\"\n" + "}\n"
-}
-
-func handleError(err error) {
-	if err != nil {
-		cli.NewExitError(err, 1)
-	}
 }
