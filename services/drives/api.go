@@ -35,5 +35,5 @@ func (s *Service) GetFiles() (*drive.FileList, error) {
 	return s.FilesService.
 		List().
 		PageSize(10).
-		Fields("nextPageToken, files(id, name)").Do()
+		Fields("*").Do()
 }

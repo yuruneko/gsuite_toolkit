@@ -90,6 +90,9 @@ func main() {
 						}
 						if len(r.Files) > 0 {
 							for _, i := range r.Files {
+								for _, p := range i.Permissions {
+									fmt.Printf("Permission: %v)\n", p)
+								}
 								fmt.Printf("%s (%s)\n", i.Name, i.Id)
 							}
 						} else {
