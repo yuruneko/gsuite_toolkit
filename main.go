@@ -26,7 +26,6 @@ const (
 	CommandReport        = "report"
 	CommandLogin         = "login"
 	CommandDrive         = "drive"
-	CommandSetup         = "setup"
 )
 
 type network struct {
@@ -180,7 +179,7 @@ func main() {
 	sort.Sort(cli.FlagsByName(app.Flags))
 	sort.Sort(cli.CommandsByName(app.Commands))
 	app.Run(os.Args)
-	//
+
 	//payload := constructPayload("/non2SVuser/suzuki/Desktop/org_structure.csv")
 	//fmt.Println(payload)
 	//url := "https://www.googleapis.com/batch"
