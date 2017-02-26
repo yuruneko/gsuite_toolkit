@@ -1,3 +1,20 @@
+# Refer to Following Scopes Settings
+# Google Apps Admin: https://developers.google.com/admin-sdk/directory/v1/guides/authorizing
+# Google Drive: https://developers.google.com/drive/v3/web/about-auth#what_scope_or_scopes_does_my_app_need
+scopes = [
+    "https://www.googleapis.com/auth/admin.reports.audit.readonly",
+    "https://www.googleapis.com/auth/admin.reports.usage.readonly",
+    "https://www.googleapis.com/auth/admin.directory.orgunit",
+    "https://www.googleapis.com/auth/admin.directory.user",
+    "https://www.googleapis.com/auth/drive",
+    "https://www.googleapis.com/auth/drive.appdata",
+    "https://www.googleapis.com/auth/drive.file",
+    "https://www.googleapis.com/auth/drive.metadata",
+    "https://www.googleapis.com/auth/drive.metadata.readonly",
+    "https://www.googleapis.com/auth/drive.photos.readonly",
+    "https://www.googleapis.com/auth/drive.readonly"
+]
+
 [owner]
 domain = "yourdomain.co.jp"
 organization = "Your Org"
