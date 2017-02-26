@@ -36,16 +36,15 @@ func (s *Service) SetClient(client *http.Client) (error) {
 func (s *Service) GetFiles() (*drive.FileList, error) {
 	call := s.FilesService.
 		List().
+		Corpus("domain").
 		Fields("*").
-		OrderBy("folder").
-		PageSize(1000).
-		Spaces("drive,appDataFolder,photos")
+		OrderBy("modifiedTime").
+		PageSize(1000)
+		//Spaces("drive,photos")
 	var r *drive.FileList
 	var e error
 	var i int
 	for {
-		fmt.Println(i)
-		i++
 		r, e = call.Do()
 		if e != nil {
 			break
@@ -54,20 +53,24 @@ func (s *Service) GetFiles() (*drive.FileList, error) {
 			break
 		} else {
 			if len(r.Files) > 0 {
-				for _, i := range r.Files {
-					fmt.Printf("%s (%s)\n", i.Name, i.Id)
+				for _, f := range r.Files {
+					//fmt.Printf("%s (%s)\n", f.Name, f.Id)
+					for _, o := range f.Owners {
+						if o.EmailAddress == "nakade.takuya@moneyforward.co.jp" {
+							fmt.Println(i)
+							i++
+							fmt.Printf("%s (%s)\n", f.Name, f.Id)
+						}
+					}
 				}
 			} else {
 				fmt.Println("No files found.")
 			}
-			fmt.Printf("File Size: %v\n", len(r.Files))
-			fmt.Printf("Page Token: %v\n", r.NextPageToken)
+
+			//fmt.Printf("File Size: %v\n", len(r.Files))
+			//fmt.Printf("Page Token: %v\n", r.NextPageToken)
 			call.PageToken(r.NextPageToken)
 		}
 	}
 	return r, e
-	//return s.FilesService.
-	//	List().
-	//	PageSize(10).
-	//	Fields("*").Do()
 }
