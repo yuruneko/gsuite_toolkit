@@ -2,6 +2,7 @@ package models
 
 type TomlConfig struct {
 	Owner DomainOwner
+	Scopes []string
 	Networks map[string][]Network
 }
 

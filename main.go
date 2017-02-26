@@ -57,11 +57,7 @@ func main() {
 
 	gsuiteClient, err = client.CreateConfig().
 		SetClientSecretFilename(ClientSecretFileName).
-		SetScopes([]string{
-		client.AdminDirectoryUserScope.String(),
-		client.AdminReportsUsageReadonlyScope.String(),
-		client.AdminReportsAuditReadonlyScope.String(),
-		client.DriveMetadataReadonlyScope.String(), }).
+		SetScopes(tomlConf.Scopes).
 		Build()
 	app.Commands = []cli.Command{
 		{
@@ -83,20 +79,7 @@ func main() {
 							return errors.New(fmt.Sprintf("Invalid type: %T", s))
 						}
 
-						r, err := s.GetFiles()
-						if err != nil {
-							return err
-						}
-						if len(r.Files) > 0 {
-							for _, i := range r.Files {
-								for _, p := range i.Permissions {
-									fmt.Printf("Permission: %v)\n", p)
-								}
-								fmt.Printf("%s (%s)\n", i.Name, i.Id)
-							}
-						} else {
-							fmt.Println("No files found.")
-						}
+						_, err := s.GetFiles()
 						return err
 					},
 				},
