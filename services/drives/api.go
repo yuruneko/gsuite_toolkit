@@ -32,45 +32,30 @@ func (s *Service) SetClient(client *http.Client) (error) {
 }
 
 // GetFiles retrieve all files within the domain
-// // https://developers.google.com/drive/v3/reference/files/list?authuser=1
-func (s *Service) GetFiles() (*drive.FileList, error) {
+
+// Refer to the following link for supported mimeType: https://developers.google.com/drive/v3/web/mime-types?authuser=0
+// To Get Child: Q('PARENT-ID' in parents)
+// https://developers.google.com/drive/v3/reference/files/list?authuser=1
+func (s *Service) GetFiles(name, mimeType string) ([]*drive.File, error) {
 	call := s.FilesService.
 		List().
-		Corpus("domain").
-		Fields("*").
+		//Corpus("domain").
+		//Fields("*").
 		OrderBy("modifiedTime").
+		// 本来は'Googleフォーム'で検索したいが、検索結果が帰ってこない
+		Q(fmt.Sprintf("name contains '%v' and mimeType = '%v'", name, mimeType)).
 		PageSize(1000)
-		//Spaces("drive,photos")
-	var r *drive.FileList
-	var e error
-	var i int
-	for {
-		r, e = call.Do()
-		if e != nil {
-			break
-		} else if r.NextPageToken == "" {
-			fmt.Println("Im the last")
-			break
-		} else {
-			if len(r.Files) > 0 {
-				for _, f := range r.Files {
-					//fmt.Printf("%s (%s)\n", f.Name, f.Id)
-					for _, o := range f.Owners {
-						if o.EmailAddress == "nakade.takuya@moneyforward.co.jp" {
-							fmt.Println(i)
-							i++
-							fmt.Printf("%s (%s)\n", f.Name, f.Id)
-						}
-					}
-				}
-			} else {
-				fmt.Println("No files found.")
-			}
 
-			//fmt.Printf("File Size: %v\n", len(r.Files))
-			//fmt.Printf("Page Token: %v\n", r.NextPageToken)
-			call.PageToken(r.NextPageToken)
+	var reports []*drive.File
+	for {
+		r, e := call.Do()
+		if e != nil {
+			return nil, e
 		}
+		reports = append(reports, r.Files...)
+		if r.NextPageToken == "" {
+			return reports, nil
+		}
+		call.PageToken(r.NextPageToken)
 	}
-	return r, e
 }
