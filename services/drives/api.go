@@ -4,6 +4,7 @@ import (
 	"google.golang.org/api/drive/v3"
 	"net/http"
 	"fmt"
+	"strings"
 )
 
 // Service provides Drive related administration tasks.
@@ -40,11 +41,37 @@ func (s *Service) GetFiles(name, mimeType string) ([]*drive.File, error) {
 	call := s.FilesService.
 		List().
 		//Corpus("domain").
-		//Fields("*").
+		Fields("*").
 		OrderBy("modifiedTime").
 		// 本来は'Googleフォーム'で検索したいが、検索結果が帰ってこない
-		Q(fmt.Sprintf("name contains '%v' and mimeType = '%v'", name, mimeType)).
-		PageSize(1000)
+		Q(fmt.Sprintf("name contains '%v' and mimeType = '%v'", name, mimeType))
+
+	var reports []*drive.File
+	for {
+		r, e := call.Do()
+		if e != nil {
+			return nil, e
+		}
+
+		for _, f := range r.Files {
+			if strings.Contains(f.Name,"Googleフォーム") {
+				reports = append(reports, f)
+			}
+		}
+		if r.NextPageToken == "" {
+			return reports, nil
+		}
+		call.PageToken(r.NextPageToken)
+	}
+}
+
+func (s *Service) GetFiles2(name, parentsId string) ([]*drive.File, error) {
+
+	call := s.FilesService.
+		List().
+		OrderBy("modifiedTime").
+		Fields("*").
+		Q(fmt.Sprintf("name contains '%v' and '%v' in parents", name, parentsId))
 
 	var reports []*drive.File
 	for {
@@ -58,4 +85,8 @@ func (s *Service) GetFiles(name, mimeType string) ([]*drive.File, error) {
 		}
 		call.PageToken(r.NextPageToken)
 	}
+}
+
+func (s *Service) GetParents(parentsId string) (*drive.File, error) {
+	return s.FilesService.Get(parentsId).Fields("name").Do()
 }

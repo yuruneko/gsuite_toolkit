@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"errors"
 	"net/http"
+	"google.golang.org/api/drive/v3"
+	"strconv"
 )
 
 const (
@@ -79,8 +81,54 @@ func main() {
 							return errors.New(fmt.Sprintf("Invalid type: %T", s))
 						}
 
-						_, err := s.GetFiles()
-						return err
+						var r []*drive.File
+						if r, err = s.GetFiles("Google", "application/vnd.google-apps.folder"); err !=nil {
+							return err
+						}
+
+						for _, f := range r {
+							var hoge *drive.File
+							if len(f.Parents) > 0 {
+								hoge, err = s.GetParents(f.Parents[0])
+								fmt.Printf(hoge.Name + " > ")
+							}
+							fmt.Print(f.Name + "\n")
+
+							//if len(f.Permissions) != 2 {
+							//	return errors.New("Supposed to be only two permission")
+							//}
+
+							//var admin, other string
+							for _, p := range f.Permissions {
+								if p.Role != "owner" {
+									//admin = p.EmailAddress
+								} else {
+									//other = p.EmailAddress
+								}
+								fmt.Println("	" + p.Role + ": " + p.EmailAddress)
+							}
+
+							if r, err = s.GetFiles2("（回答）", f.Id); err !=nil {
+								return err
+							}
+							for _, report := range r {
+								fmt.Println("	" + report.Name + " - " + strconv.FormatBool(report.Capabilities.CanShare))
+								fmt.Println("		LastModifier: " + report.LastModifyingUser.EmailAddress)
+								if len(report.Permissions) < 0 {
+									return errors.New("Supposed to be no permission")
+								}
+
+								for _, o := range report.Owners {
+									fmt.Println("		" + "I'm owner!" + ": " + o.EmailAddress)
+								}
+
+								for _, p := range report.Permissions {
+									fmt.Println("		" + p.Role + ": " + p.EmailAddress)
+								}
+							}
+						}
+
+						return nil
 					},
 				},
 			},
