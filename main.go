@@ -112,6 +112,9 @@ func main() {
 								return err
 							}
 							for _, report := range r {
+								if report.Capabilities.CanShare {
+									continue
+								}
 								fmt.Println("	" + report.Name + " - " + strconv.FormatBool(report.Capabilities.CanShare))
 								fmt.Println("		LastModifier: " + report.LastModifyingUser.EmailAddress)
 								if len(report.Permissions) < 0 {
