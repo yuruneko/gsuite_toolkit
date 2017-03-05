@@ -94,10 +94,6 @@ func main() {
 							}
 							fmt.Print(f.Name + "\n")
 
-							//if len(f.Permissions) != 2 {
-							//	return errors.New("Supposed to be only two permission")
-							//}
-
 							//var admin, other string
 							for _, p := range f.Permissions {
 								if p.Role != "owner" {
@@ -108,7 +104,7 @@ func main() {
 								fmt.Println("	" + p.Role + ": " + p.EmailAddress)
 							}
 
-							if r, err = s.GetFiles2("（回答）", f.Id); err !=nil {
+							if r, err = s.GetFilesWithinDir("（回答）", f.Id); err !=nil {
 								return err
 							}
 							for _, report := range r {

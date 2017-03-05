@@ -65,28 +65,48 @@ func (s *Service) GetFiles(name, mimeType string) ([]*drive.File, error) {
 	}
 }
 
-func (s *Service) GetFiles2(name, parentsId string) ([]*drive.File, error) {
-
-	call := s.FilesService.
+// GetFilesWithinDir searches files within a directory by regular expression
+func (s *Service) GetFilesWithinDir(name, parentsId string) ([]*drive.File, error) {
+	c := s.FilesService.
 		List().
 		OrderBy("modifiedTime").
 		Fields("*").
+		// Refer formats fof Drive query from following link.
+		// https://developers.google.com/drive/v3/web/search-parameters
 		Q(fmt.Sprintf("name contains '%v' and '%v' in parents", name, parentsId))
 
-	var reports []*drive.File
-	for {
-		r, e := call.Do()
-		if e != nil {
-			return nil, e
-		}
-		reports = append(reports, r.Files...)
-		if r.NextPageToken == "" {
-			return reports, nil
-		}
-		call.PageToken(r.NextPageToken)
+	f := &FilesCall{Call:c}
+	if e := f.RepeatCallerUntilNoPageToken(); e != nil {
+		return nil, e
 	}
+	return f.Files, nil
 }
 
 func (s *Service) GetParents(parentsId string) (*drive.File, error) {
 	return s.FilesService.Get(parentsId).Fields("name").Do()
+}
+
+type Hoge interface {
+	Init() Hoge
+	RepeatCallerUntilNoPageToken() error
+}
+
+type FilesCall struct {
+	Files []*drive.File
+	Call  *drive.FilesListCall
+}
+
+func (h *FilesCall) RepeatCallerUntilNoPageToken() error {
+	h.Files = []*drive.File{}
+	for {
+		r, e := h.Call.Do()
+		if e != nil {
+			return e
+		}
+		h.Files = append(h.Files, r.Files...)
+		if r.NextPageToken == "" {
+			return nil
+		}
+		h.Call.PageToken(r.NextPageToken)
+	}
 }
