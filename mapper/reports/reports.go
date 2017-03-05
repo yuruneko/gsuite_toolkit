@@ -34,7 +34,13 @@ func GetNon2StepVerifiedUsers(report *admin.UsageReports) error {
 // GetIllegalLoginUsersAndIp
 // Main purpose is to detect employees who have not logged in from office for 30days
 func GetIllegalLoginUsersAndIp(activities []*admin.Activity, officeIPs []string) error {
-	data := make(map[string]*LoginInformation)
+	type loginInfo struct{
+		Email       string
+		OfficeLogin bool
+		LoginIPs    []string
+	}
+
+	data := make(map[string]loginInfo)
 	for _, activity := range activities {
 		email := activity.Actor.Email
 		ip := activity.IpAddress
@@ -47,10 +53,7 @@ func GetIllegalLoginUsersAndIp(activities []*admin.Activity, officeIPs []string)
 			}
 			value.LoginIPs = append(value.LoginIPs, ip)
 		} else {
-			data[email] = &LoginInformation{
-				email,
-				containIP(officeIPs, ip),
-				[]string{ip}}
+			data[email] = loginInfo{email, containIP(officeIPs, ip), []string{ip}}
 		}
 	}
 
@@ -62,11 +65,6 @@ func GetIllegalLoginUsersAndIp(activities []*admin.Activity, officeIPs []string)
 		}
 	}
 	return nil
-}
-type LoginInformation struct {
-	Email       string
-	OfficeLogin bool
-	LoginIPs    []string
 }
 
 func containIP(ips []string, ip string) bool {
