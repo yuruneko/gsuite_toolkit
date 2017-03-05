@@ -34,11 +34,11 @@ func (s *Service) SetClient(client *http.Client) (error) {
 	return nil
 }
 
-// GetFilesWithTitle retrieve all files of which contains {name} in name of file
+// GetDriveMaterialsWithTitle retrieve all files of which contains {name} in name of file
 // Note returning files are ones of which authorized user can see
 // Refer to the following link for supported mimeType: https://developers.google.com/drive/v3/web/mime-types?authuser=0
 // https://developers.google.com/drive/v3/reference/files/list?authuser=1
-func (s *Service) GetFilesWithTitle(title, mimeType string) ([]*drive.File, error) {
+func (s *Service) GetDriveMaterialsWithTitle(title, mimeType string) ([]*drive.File, error) {
 	call := s.FilesService.
 		List().
 		//Corpus("domain").

@@ -78,29 +78,7 @@ func main() {
 							return errors.New(fmt.Sprintf("Invalid type: %T", s))
 						}
 						dc := actions.NewDriveController(s.(*driveService.Service))
-						r, err := dc.GetFiles()
-						//r, err := s.GetFilesWithTitle("Google", "application/vnd.google-apps.folder")
-						if err !=nil {
-							return err
-						}
-
-						for _, f := range r {
-							if len(f.Parents) > 0 {
-								hoge, _ := s.GetParents(f.Parents[0])
-								fmt.Printf(hoge.Name + " > ")
-							}
-							fmt.Print(f.Name + "\n")
-							actions.GetPermissions(f)
-
-							if r, err = s.GetFilesWithinDir(f.Id); err !=nil {
-								return err
-							}
-							if err = actions.GetParameters(r); err != nil {
-								return err
-							}
-						}
-
-						return nil
+						return dc.SearchFolders()
 					},
 				},
 			},

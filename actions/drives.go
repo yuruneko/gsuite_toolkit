@@ -16,19 +16,31 @@ func NewDriveController(s *drives.Service) *DriveController {
 	return &DriveController{s}
 }
 
-func (dc DriveController) GetFiles() ([]*drive.File, error) {
+func (dc DriveController) SearchFolders() error {
 	// 本来は'Googleフォーム'で検索したいが、検索結果が帰ってこない
 	title := "Google"
 	mimeType := "application/vnd.google-apps.folder"
-	if r, err := dc.GetFilesWithTitle(title, mimeType); err !=nil {
-		return nil, err
+	if r, err := dc.GetDriveMaterialsWithTitle(title, mimeType); err !=nil {
+		return  err
 	} else {
-		return r, nil
-	}
-}
+		//return r, nil
+		for _, f := range r {
+			if len(f.Parents) > 0 {
+				hoge, _ := dc.GetParents(f.Parents[0])
+				fmt.Printf(hoge.Name + " > ")
+			}
+			fmt.Print(f.Name + "\n")
+			GetPermissions(f)
 
-func GetParents() error {
-	return nil
+			if r, err = dc.GetFilesWithinDir(f.Id); err !=nil {
+				return  err
+			}
+			if err = GetParameters(r); err != nil {
+				return  err
+			}
+		}
+	}
+	return  nil
 }
 
 func GetPermissions(f *drive.File) {
