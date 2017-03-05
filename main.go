@@ -9,7 +9,6 @@ import (
 	"strings"
 	"github.com/urfave/cli"
 	"sort"
-	"github.com/ken5scal/gsuite_toolkit/mapper/reports"
 	reportService "github.com/ken5scal/gsuite_toolkit/services/reports"
 	userService "github.com/ken5scal/gsuite_toolkit/services/users"
 	driveService "github.com/ken5scal/gsuite_toolkit/services/drives"
@@ -21,6 +20,7 @@ import (
 	"net/http"
 	"google.golang.org/api/drive/v3"
 	"strconv"
+	"github.com/ken5scal/gsuite_toolkit/mapper"
 )
 
 const (
