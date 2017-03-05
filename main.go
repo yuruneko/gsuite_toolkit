@@ -66,8 +66,7 @@ func main() {
 			Usage:    "Audit files within Google Drive.",
 			Before: func(*cli.Context) error {
 				s = driveService.Init()
-				err := s.SetClient(gsuiteClient)
-				return err
+				return s.SetClient(gsuiteClient)
 			},
 			Subcommands: []cli.Command{
 				{

@@ -23,12 +23,12 @@ func (dc DriveController) SearchFolders() error {
 	if r, err := dc.GetDriveMaterialsWithTitle(title, mimeType); err !=nil {
 		return  err
 	} else {
-		//return r, nil
 		for _, f := range r {
 			if len(f.Parents) > 0 {
 				hoge, _ := dc.GetParents(f.Parents[0])
 				fmt.Printf(hoge.Name + " > ")
 			}
+
 			fmt.Print(f.Name + "\n")
 			GetPermissions(f)
 
@@ -49,6 +49,12 @@ func GetPermissions(f *drive.File) {
 	}
 }
 
+func GetPermissions2(f *drive.File) {
+	for _, p := range f.Permissions {
+		fmt.Println("		" + p.Role + ": " + p.EmailAddress)
+	}
+}
+
 func GetParameters(r []*drive.File) error {
 	for _, report := range r {
 		fmt.Println("	" + report.Name + " - " + strconv.FormatBool(report.Capabilities.CanShare))
@@ -61,7 +67,7 @@ func GetParameters(r []*drive.File) error {
 			fmt.Println("		" + "I'm owner!" + ": " + o.EmailAddress)
 		}
 
-		GetPermissions(report)
+		GetPermissions2(report)
 	}
 	return nil
 }
