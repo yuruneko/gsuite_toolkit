@@ -13,6 +13,8 @@ import (
 type Service struct {
 	*drive.FilesService
 	*http.Client
+	Files []*drive.File
+	Call  *drive.FilesListCall
 }
 
 // Initialize Service
@@ -75,20 +77,16 @@ func (s *Service) GetFilesWithinDir(name, parentsId string) ([]*drive.File, erro
 		// https://developers.google.com/drive/v3/web/search-parameters
 		Q(fmt.Sprintf("name contains '%v' and '%v' in parents", name, parentsId))
 
-	f := &FilesCall{Call:c}
-	if e := f.RepeatCallerUntilNoPageToken(); e != nil {
+	//f := &FilesCall{Call:c}
+	s.Call = c
+	if e := s.RepeatCallerUntilNoPageToken(); e != nil {
 		return nil, e
 	}
-	return f.Files, nil
+	return s.Files, nil
 }
 
 func (s *Service) GetParents(parentsId string) (*drive.File, error) {
 	return s.FilesService.Get(parentsId).Fields("name").Do()
-}
-
-type Hoge interface {
-	Init() Hoge
-	RepeatCallerUntilNoPageToken() error
 }
 
 type FilesCall struct {
@@ -96,17 +94,17 @@ type FilesCall struct {
 	Call  *drive.FilesListCall
 }
 
-func (h *FilesCall) RepeatCallerUntilNoPageToken() error {
-	h.Files = []*drive.File{}
+func (s *Service) RepeatCallerUntilNoPageToken() error {
+	s.Files = []*drive.File{}
 	for {
-		r, e := h.Call.Do()
+		r, e := s.Call.Do()
 		if e != nil {
 			return e
 		}
-		h.Files = append(h.Files, r.Files...)
+		s.Files = append(s.Files, r.Files...)
 		if r.NextPageToken == "" {
 			return nil
 		}
-		h.Call.PageToken(r.NextPageToken)
+		s.Call.PageToken(r.NextPageToken)
 	}
 }
