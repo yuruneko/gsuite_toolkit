@@ -20,6 +20,8 @@ type Service struct {
 	*admin.ChannelsService
 	*admin.CustomerUsageReportsService
 	*http.Client
+	Call *admin.ActivitiesListCall
+	Activities []*admin.Activity
 }
 
 // Initialize Service
@@ -84,21 +86,28 @@ func (s *Service) Get2StepVerifiedStatusReport() (*admin.UsageReports, error) {
 // EX: GetLoginActivities(30)
 func (s *Service) GetLoginActivities(daysAgo int) ([]*admin.Activity, error) {
 	time30DaysAgo := time.Now().Add(-time.Duration(daysAgo) * time.Hour * 24)
-	call := s.ActivitiesService.
+	s.Call = s.ActivitiesService.
 		List("all", "login").
 		EventName("login_success").
 		StartTime(time30DaysAgo.Format(time.RFC3339))
 
-	var activityList []*admin.Activity
+	if e := s.RepeatCallerUntilNoPageToken(); e != nil {
+		return nil, e
+	}
+	return s.Activities, nil
+}
+
+func (s *Service) RepeatCallerUntilNoPageToken() error {
+	s.Activities =  []*admin.Activity{}
 	for {
-		r, e := call.Do()
+		r, e := s.Call.Do()
 		if e != nil {
-			return nil, e
+			return e
 		}
-		activityList = append(activityList, r.Items...)
+		s.Activities = append(s.Activities, r.Items...)
 		if r.NextPageToken == "" {
-			return activityList, nil
+			return nil
 		}
-		call.PageToken(r.NextPageToken)
+		s.Call.PageToken(r.NextPageToken)
 	}
 }

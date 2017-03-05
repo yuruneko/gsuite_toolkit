@@ -69,7 +69,7 @@ func (s *Service) GetFiles(name, mimeType string) ([]*drive.File, error) {
 
 // GetFilesWithinDir searches files within a directory by regular expression
 func (s *Service) GetFilesWithinDir(name, parentsId string) ([]*drive.File, error) {
-	c := s.FilesService.
+	s.Call = s.FilesService.
 		List().
 		OrderBy("modifiedTime").
 		Fields("*").
@@ -77,8 +77,6 @@ func (s *Service) GetFilesWithinDir(name, parentsId string) ([]*drive.File, erro
 		// https://developers.google.com/drive/v3/web/search-parameters
 		Q(fmt.Sprintf("name contains '%v' and '%v' in parents", name, parentsId))
 
-	//f := &FilesCall{Call:c}
-	s.Call = c
 	if e := s.RepeatCallerUntilNoPageToken(); e != nil {
 		return nil, e
 	}
@@ -87,11 +85,6 @@ func (s *Service) GetFilesWithinDir(name, parentsId string) ([]*drive.File, erro
 
 func (s *Service) GetParents(parentsId string) (*drive.File, error) {
 	return s.FilesService.Get(parentsId).Fields("name").Do()
-}
-
-type FilesCall struct {
-	Files []*drive.File
-	Call  *drive.FilesListCall
 }
 
 func (s *Service) RepeatCallerUntilNoPageToken() error {
