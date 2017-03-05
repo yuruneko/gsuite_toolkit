@@ -20,7 +20,7 @@ import (
 	"net/http"
 	"google.golang.org/api/drive/v3"
 	"strconv"
-	"github.com/ken5scal/gsuite_toolkit/mapper"
+	"github.com/ken5scal/gsuite_toolkit/actions"
 )
 
 const (
@@ -180,7 +180,7 @@ func main() {
 						if err != nil {
 							return err
 						}
-						err = reports.GetNon2StepVerifiedUsers(r)
+						err = actions.GetNon2StepVerifiedUsers(r)
 						if err != nil {
 							return err
 						}
@@ -195,7 +195,7 @@ func main() {
 						if err != nil {
 							return err
 						}
-						err = reports.GetIllegalLoginUsersAndIp(r, tomlConf.GetAllIps())
+						err = actions.GetIllegalLoginUsersAndIp(r, tomlConf.GetAllIps())
 						if err != nil {
 							return err
 						}
