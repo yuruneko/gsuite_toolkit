@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"errors"
 	"net/http"
-	"google.golang.org/api/drive/v3"
 	"github.com/ken5scal/gsuite_toolkit/actions"
 )
 
@@ -75,34 +74,23 @@ func main() {
 					Name:  "list",
 					Usage: "get all Files",
 					Action: func(context *cli.Context) error {
-						s, ok := s.(*driveService.Service)
-						if !ok {
+						if _, ok := s.(*driveService.Service); !ok {
 							return errors.New(fmt.Sprintf("Invalid type: %T", s))
 						}
-
-						// 本来は'Googleフォーム'で検索したいが、検索結果が帰ってこない
-						r, err := s.GetFilesWithTitle("Google", "application/vnd.google-apps.folder")
+						dc := actions.NewDriveController(s.(*driveService.Service))
+						r, err := dc.GetFiles()
+						//r, err := s.GetFilesWithTitle("Google", "application/vnd.google-apps.folder")
 						if err !=nil {
 							return err
 						}
 
 						for _, f := range r {
-							var hoge *drive.File
 							if len(f.Parents) > 0 {
-								hoge, err = s.GetParents(f.Parents[0])
+								hoge, _ := s.GetParents(f.Parents[0])
 								fmt.Printf(hoge.Name + " > ")
 							}
 							fmt.Print(f.Name + "\n")
-
-							//var admin, other string
-							for _, p := range f.Permissions {
-								if p.Role != "owner" {
-									//admin = p.EmailAddress
-								} else {
-									//other = p.EmailAddress
-								}
-								fmt.Println("	" + p.Role + ": " + p.EmailAddress)
-							}
+							actions.GetPermissions(f)
 
 							if r, err = s.GetFilesWithinDir(f.Id); err !=nil {
 								return err

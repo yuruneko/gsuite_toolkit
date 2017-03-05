@@ -75,7 +75,7 @@ func (s *Service) GetFilesWithinDir(parentsId string) ([]*drive.File, error) {
 		Fields("*").
 		// Refer formats fof Drive query from following link.
 		// https://developers.google.com/drive/v3/web/search-parameters
-		Q(fmt.Sprintf("%v' in parents", parentsId))
+		Q(fmt.Sprintf("'%v' in parents", parentsId))
 
 	if e := s.RepeatCallerUntilNoPageToken(); e != nil {
 		return nil, e
