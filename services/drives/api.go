@@ -34,19 +34,19 @@ func (s *Service) SetClient(client *http.Client) (error) {
 	return nil
 }
 
-// GetFiles retrieve all files within the domain
-
+// GetFilesWithTitle retrieve all files of which contains {name} in name of file
+// Note returning files are ones of which authorized user can see
 // Refer to the following link for supported mimeType: https://developers.google.com/drive/v3/web/mime-types?authuser=0
-// To Get Child: Q('PARENT-ID' in parents)
 // https://developers.google.com/drive/v3/reference/files/list?authuser=1
-func (s *Service) GetFiles(name, mimeType string) ([]*drive.File, error) {
+func (s *Service) GetFilesWithTitle(title, mimeType string) ([]*drive.File, error) {
 	call := s.FilesService.
 		List().
 		//Corpus("domain").
 		Fields("*").
 		OrderBy("modifiedTime").
-		// 本来は'Googleフォーム'で検索したいが、検索結果が帰ってこない
-		Q(fmt.Sprintf("name contains '%v' and mimeType = '%v'", name, mimeType))
+		// Refer formats fof Drive query from following link.
+		// https://developers.google.com/drive/v3/web/search-parameters
+		Q(fmt.Sprintf("name contains '%v' and mimeType = '%v'", title, mimeType))
 
 	var reports []*drive.File
 	for {
@@ -68,14 +68,14 @@ func (s *Service) GetFiles(name, mimeType string) ([]*drive.File, error) {
 }
 
 // GetFilesWithinDir searches files within a directory by regular expression
-func (s *Service) GetFilesWithinDir(name, parentsId string) ([]*drive.File, error) {
+func (s *Service) GetFilesWithinDir(parentsId string) ([]*drive.File, error) {
 	s.Call = s.FilesService.
 		List().
 		OrderBy("modifiedTime").
 		Fields("*").
 		// Refer formats fof Drive query from following link.
 		// https://developers.google.com/drive/v3/web/search-parameters
-		Q(fmt.Sprintf("name contains '%v' and '%v' in parents", name, parentsId))
+		Q(fmt.Sprintf("%v' in parents", parentsId))
 
 	if e := s.RepeatCallerUntilNoPageToken(); e != nil {
 		return nil, e
