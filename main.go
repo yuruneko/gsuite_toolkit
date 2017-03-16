@@ -76,8 +76,17 @@ func main() {
 						if _, ok := s.(*driveService.Service); !ok {
 							return errors.New(fmt.Sprintf("Invalid type: %T", s))
 						}
+
 						dc := actions.NewDriveController(s.(*driveService.Service))
-						return dc.SearchFolders()
+
+						if context.NArg() > 0 {
+							fmt.Println("with arg")
+							name := context.Args()[0]
+							return dc.SearchFolders(name)
+						} else {
+							fmt.Println("without")
+							return dc.SearchAllFolders()
+						}
 					},
 				},
 			},

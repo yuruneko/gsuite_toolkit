@@ -12,21 +12,47 @@ type DriveController struct {
 	*drives.Service
 }
 
+const (
+	FolderMimeType = "application/vnd.google-apps.folder"
+)
+
 func NewDriveController(s *drives.Service) *DriveController {
 	return &DriveController{s}
 }
 
-func (dc DriveController) SearchFolders() error {
+func (dc DriveController) SearchFolders(title string) error {
 	// 本来は'Googleフォーム'で検索したいが、検索結果が帰ってこない
-	title := "Google"
-	mimeType := "application/vnd.google-apps.folder"
-	if r, err := dc.GetDriveMaterialsWithTitle(title, mimeType); err !=nil {
+	if r, err := dc.GetDriveMaterialsWithTitle(title, FolderMimeType); err !=nil {
 		return  err
 	} else {
 		for _, f := range r {
 			if len(f.Parents) > 0 {
-				hoge, _ := dc.GetParents(f.Parents[0])
-				fmt.Printf(hoge.Name + " > ")
+				parent, _ := dc.GetParents(f.Parents[0])
+				fmt.Printf(parent.Name + " > ")
+			}
+
+			fmt.Print(f.Name + "\n")
+			GetPermissions(f)
+
+			if r, err = dc.GetFilesWithinDir(f.Id); err !=nil {
+				return  err
+			}
+			if err = GetParameters(r); err != nil {
+				return  err
+			}
+		}
+	}
+	return  nil
+}
+
+func (dc DriveController) SearchAllFolders() error {
+	if r, err := dc.GetDriveMaterialsWithTitle("*", FolderMimeType); err !=nil {
+		return  err
+	} else {
+		for _, f := range r {
+			if len(f.Parents) > 0 {
+				parent, _ := dc.GetParents(f.Parents[0])
+				fmt.Printf(parent.Name + " > ")
 			}
 
 			fmt.Print(f.Name + "\n")
