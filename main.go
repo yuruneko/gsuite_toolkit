@@ -106,7 +106,7 @@ func main() {
 					Name:  "rare-login",
 					Usage: "get employees who have not logged in for a while",
 					Action: func(context *cli.Context) error {
-						r, err := s.(*userService.Service).GetUsersWithRareLogin(30, tomlConf.Owner.DomainName)
+						r, err := s.(*userService.Service).GetUsersWithRareLogin(14, tomlConf.Owner.DomainName)
 						if err != nil {
 							return err
 						}
@@ -144,10 +144,10 @@ func main() {
 					},
 				},
 				{
-					Name:  "untrusted_login",
+					Name:  "suspicious_login",
 					Usage: "get employees who have not been office for 30 days, but accessing",
 					Action: func(c *cli.Context) error {
-						r, err := s.(*reportService.Service).GetLoginActivities(30)
+						r, err := s.(*reportService.Service).GetLoginActivities(45)
 						if err != nil {
 							return err
 						}
