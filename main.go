@@ -177,7 +177,7 @@ func main() {
 			},
 			Subcommands: []cli.Command{
 				{
-					Name:  "2sv",
+					Name:  "non2sv",
 					Usage: "get employees who have not enabled 2sv",
 					Action: func(context *cli.Context) error {
 						r, err := s.(*reportService.Service).Get2StepVerifiedStatusReport()
