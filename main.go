@@ -80,11 +80,8 @@ func main() {
 						dc := actions.NewDriveController(s.(*driveService.Service))
 
 						if context.NArg() > 0 {
-							fmt.Println("with arg")
-							name := context.Args()[0]
-							return dc.SearchFolders(name)
+							return dc.SearchFolders(context.Args()[0])
 						} else {
-							fmt.Println("without")
 							return dc.SearchAllFolders()
 						}
 					},

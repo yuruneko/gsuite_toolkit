@@ -4,7 +4,6 @@ import (
 	"google.golang.org/api/drive/v3"
 	"net/http"
 	"fmt"
-	"strings"
 )
 
 // Service provides Drive related administration tasks.
@@ -56,9 +55,7 @@ func (s *Service) GetDriveMaterialsWithTitle(title, mimeType string) ([]*drive.F
 		}
 
 		for _, f := range r.Files {
-			if strings.Contains(f.Name,"Googleフォーム") {
-				reports = append(reports, f)
-			}
+			reports = append(reports, f)
 		}
 		if r.NextPageToken == "" {
 			return reports, nil
