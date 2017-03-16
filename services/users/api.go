@@ -90,3 +90,7 @@ func (s *Service) GetUsersWithRareLogin(days int, domain string) ([]*admin.User,
 
 	return goneUsers, nil
 }
+
+func (s *Service) RepeatCallerUntilNoPageToken() error {
+	return nil
+}
