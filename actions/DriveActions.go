@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"strconv"
 	"errors"
+	"github.com/urfave/cli"
+	"github.com/ken5scal/gsuite_toolkit/services"
+
 )
 
 type DriveController struct {
@@ -20,7 +23,24 @@ func NewDriveController(s *drives.Service) *DriveController {
 	return &DriveController{s}
 }
 
-func (dc DriveController) SearchFolders(title string) error {
+func Hoge(s services.Service, context *cli.Context) error {
+	if _, ok := s.(*drives.Service); !ok {
+		return errors.New(fmt.Sprintf("Invalid type: %T", s))
+	}
+	dc := NewDriveController(s.(*drives.Service))
+	if context.NArg() > 0 {
+		return dc.SearchFolders(context.Args()[0])
+	} else {
+		return dc.SearchAllFolders()
+	}
+}
+
+func SearchFolders(s services.Service, title string) error {
+	if _, ok := s.(*drives.Service); !ok {
+		return errors.New(fmt.Sprintf("Invalid type: %T", s))
+	}
+
+	dc := NewDriveController(s.(*drives.Service))
 	// 本来は'Googleフォーム'で検索したいが、検索結果が帰ってこない
 	if r, err := dc.GetDriveMaterialsWithTitle(title, FolderMimeType); err !=nil {
 		return  err

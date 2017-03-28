@@ -33,6 +33,15 @@ type network struct {
 	Ip []string
 }
 
+func buildCommand(name, usage string, action func(context *cli.Context) error ) cli.Command {
+	return cli.Command{
+		Name:name,
+		Category:name,
+		Usage:usage,
+		Action:action,
+	}
+}
+
 func main() {
 	var tomlConf models.TomlConfig
 	var s services.Service
@@ -69,23 +78,17 @@ func main() {
 				return s.SetClient(gsuiteClient)
 			},
 			Subcommands: []cli.Command{
-				{
-					Name:  "list",
-					Usage: "get all Files",
-					Action: func(context *cli.Context) error {
-						if _, ok := s.(*driveService.Service); !ok {
-							return errors.New(fmt.Sprintf("Invalid type: %T", s))
+				buildCommand("list", "list all files",
+					func(context *cli.Context) error {
+						return actions.Hoge(s, context)
+					}),
+				buildCommand("search", "search file",
+					func(context *cli.Context) error {
+						if context.NArg() != 1 {
+							return errors.New("No Argument found. Specify key word.")
 						}
-
-						dc := actions.NewDriveController(s.(*driveService.Service))
-
-						if context.NArg() > 0 {
-							return dc.SearchFolders(context.Args()[0])
-						} else {
-							return dc.SearchAllFolders()
-						}
-					},
-				},
+						return actions.SearchFolders(s, context.Args()[0])
+					}),
 			},
 		},
 		{
