@@ -24,8 +24,6 @@ import (
 const (
 	ClientSecretFileName = "client_secret.json"
 	CommandReport        = "report"
-	CommandLogin         = "login"
-	CommandDrive         = "drive"
 )
 
 type network struct {
@@ -101,32 +99,6 @@ func main() {
 			},
 		},
 		{
-			Name: CommandLogin, Category: CommandLogin,
-			Usage: "Create user profiles, manage user information, even add administrators.",
-			Before: func(*cli.Context) error {
-				s = userService.Init()
-				err := s.SetClient(gsuiteClient)
-				return err
-			},
-			Action: showHelpFunc,
-			Subcommands: []cli.Command{
-				{
-					Name:  "rare-login",
-					Usage: "get employees who have not logged in for a while",
-					Action: func(context *cli.Context) error {
-						r, err := s.(*userService.Service).GetUsersWithRareLogin(14, tomlConf.Owner.DomainName)
-						if err != nil {
-							return err
-						}
-						for _, user := range r {
-							fmt.Println(user.PrimaryEmail)
-						}
-						return nil
-					},
-				},
-			},
-		},
-		{
 			Name: CommandReport, Category: CommandReport, Usage:    "Gain insights on content management with Google Drive activity reports. Audit administrator actions. Generate customer and user usage reports.",
 			Before: func(*cli.Context) error {
 				s = reportService.Init()
@@ -135,6 +107,21 @@ func main() {
 			},
 			Action: showHelpFunc,
 			Subcommands: []cli.Command{
+				{
+					Name:  "rare-login", Usage: "get employees who have not logged in for a while",
+					Before: func(*cli.Context) error {
+						s = userService.Init()
+						err := s.SetClient(gsuiteClient)
+						return err
+					},
+					Action: func(context *cli.Context) error {
+						action, err := actions.NewReportAction(s)
+						if err != nil {
+							return err
+						}
+						return action.GetUsersWithRareLogin(14, tomlConf.Owner.DomainName)
+					},
+				},
 				{
 					Name:  "non2sv", Usage: "get employees who have not enabled 2sv",
 					Action: func(context *cli.Context) error {

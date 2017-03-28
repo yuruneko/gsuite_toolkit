@@ -6,21 +6,25 @@ import (
 	"google.golang.org/api/admin/reports/v1"
 	"github.com/ken5scal/gsuite_toolkit/services/reports"
 	"github.com/ken5scal/gsuite_toolkit/services"
+	"github.com/ken5scal/gsuite_toolkit/services/users"
 )
 
 type ReportAction struct {
-	*reports.Service
+	report *reports.Service
+	user *users.Service
 }
 
 func NewReportAction(s services.Service) (*ReportAction, error) {
-	if _, ok := s.(*reports.Service); !ok {
-		return nil, errors.New(fmt.Sprintf("Invalid type: %T", s))
+	if _, ok := s.(*reports.Service); ok {
+		return &ReportAction{s.(*reports.Service), nil}, nil
+	} else if _, ok := s.(*users.Service); ok {
+		return &ReportAction{nil, s.(*users.Service)}, nil
 	}
-	return &ReportAction{s.(*reports.Service)}, nil
+	return nil, errors.New(fmt.Sprintf("Invalid type: %T", s))
 }
 
 func (action ReportAction) GetNon2StepVerifiedUsers() error {
-	report, err := action.Get2StepVerifiedStatusReport()
+	report, err := action.report.Get2StepVerifiedStatusReport()
 	if err != nil {
 		return err
 	}
@@ -50,11 +54,22 @@ func (action ReportAction) GetNon2StepVerifiedUsers() error {
 }
 
 func (action ReportAction) GetAllLoginActivities(daysAgo int) ([]*admin.Activity, error) {
-	activities, err := action.GetLoginActivities(daysAgo)
+	activities, err := action.report.GetLoginActivities(daysAgo)
 	if err != nil {
 		return nil, err
 	}
 	return activities, nil
+}
+
+func (action ReportAction) GetUsersWithRareLogin(daysAgo int, name string) error {
+	r, err := action.user.GetUsersWithRareLogin(daysAgo, name)
+	if err != nil {
+		return err
+	}
+	for _, user := range r {
+		fmt.Println(user.PrimaryEmail)
+	}
+	return nil
 }
 
 // GetIllegalLoginUsersAndIp
