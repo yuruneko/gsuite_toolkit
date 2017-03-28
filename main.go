@@ -85,7 +85,7 @@ func main() {
 				buildCommand("search", "search file",
 					func(context *cli.Context) error {
 						if context.NArg() != 1 {
-							return errors.New("No Argument found. Specify key word.")
+							return errors.New("Number of keyword must be exactly 1")
 						}
 						return actions.SearchFolders(s, context.Args()[0])
 					}),
