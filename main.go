@@ -80,7 +80,7 @@ func main() {
 			Subcommands: []cli.Command{
 				buildCommand("list", "list all files",
 					func(context *cli.Context) error {
-						return actions.Hoge(s, context)
+						return actions.SearchAllFolders(s)
 					}),
 				buildCommand("search", "search file",
 					func(context *cli.Context) error {

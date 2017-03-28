@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strconv"
 	"errors"
-	"github.com/urfave/cli"
 	"github.com/ken5scal/gsuite_toolkit/services"
 
 )
@@ -21,18 +20,6 @@ const (
 
 func NewDriveController(s *drives.Service) *DriveController {
 	return &DriveController{s}
-}
-
-func Hoge(s services.Service, context *cli.Context) error {
-	if _, ok := s.(*drives.Service); !ok {
-		return errors.New(fmt.Sprintf("Invalid type: %T", s))
-	}
-	dc := NewDriveController(s.(*drives.Service))
-	if context.NArg() > 0 {
-		return dc.SearchFolders(context.Args()[0])
-	} else {
-		return dc.SearchAllFolders()
-	}
 }
 
 func SearchFolders(s services.Service, title string) error {
@@ -65,7 +52,13 @@ func SearchFolders(s services.Service, title string) error {
 	return  nil
 }
 
-func (dc DriveController) SearchAllFolders() error {
+func SearchAllFolders(s services.Service) error {
+	if _, ok := s.(*drives.Service); !ok {
+		return errors.New(fmt.Sprintf("Invalid type: %T", s))
+	}
+
+	dc := NewDriveController(s.(*drives.Service))
+
 	if r, err := dc.GetDriveMaterialsWithTitle("*", FolderMimeType); err !=nil {
 		return  err
 	} else {
