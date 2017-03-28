@@ -10,7 +10,7 @@ import (
 
 )
 
-type DriveController struct {
+type DriveAction struct {
 	*drives.Service
 }
 
@@ -24,33 +24,28 @@ const (
 	SearchUsage = "search a keyword buy specifying an argument"
 )
 
-func NewDriveController(s services.Service) (*DriveController, error) {
+func NewDriveAction(s services.Service) (*DriveAction, error) {
 	if _, ok := s.(*drives.Service); !ok {
 		return nil, errors.New(fmt.Sprintf("Invalid type: %T", s))
 	}
-	return &DriveController{s.(*drives.Service)}, nil
+	return &DriveAction{s.(*drives.Service)}, nil
 }
 
-func SearchFolders(s services.Service, title string) error {
-	dc, err := NewDriveController(s)
-	if err != nil {
-		return err
-	}
-
+func (action DriveAction) SearchFoldersWithName(title string) error {
 	// 本来は'Googleフォーム'で検索したいが、検索結果が帰ってこない
-	if r, err := dc.GetDriveMaterialsWithTitle(title, FolderMimeType); err !=nil {
+	if r, err := action.GetDriveMaterialsWithTitle(title, FolderMimeType); err !=nil {
 		return  err
 	} else {
 		for _, f := range r {
 			if len(f.Parents) > 0 {
-				parent, _ := dc.GetParents(f.Parents[0])
+				parent, _ := action.GetParents(f.Parents[0])
 				fmt.Printf(parent.Name + " > ")
 			}
 
 			fmt.Print(f.Name + "\n")
 			GetPermissions(f)
 
-			if r, err = dc.GetFilesWithinDir(f.Id); err !=nil {
+			if r, err = action.GetFilesWithinDir(f.Id); err !=nil {
 				return  err
 			}
 			if err = GetParameters(r); err != nil {
@@ -61,25 +56,20 @@ func SearchFolders(s services.Service, title string) error {
 	return  nil
 }
 
-func SearchAllFolders(s services.Service) error {
-	dc, err := NewDriveController(s)
-	if err != nil {
-		return err
-	}
-
-	if r, err := dc.GetDriveMaterialsWithTitle("*", FolderMimeType); err !=nil {
+func (action DriveAction) SearchAllFolders() error {
+	if r, err := action.GetDriveMaterialsWithTitle("*", FolderMimeType); err !=nil {
 		return  err
 	} else {
 		for _, f := range r {
 			if len(f.Parents) > 0 {
-				parent, _ := dc.GetParents(f.Parents[0])
+				parent, _ := action.GetParents(f.Parents[0])
 				fmt.Printf(parent.Name + " > ")
 			}
 
 			fmt.Print(f.Name + "\n")
 			GetPermissions(f)
 
-			if r, err = dc.GetFilesWithinDir(f.Id); err !=nil {
+			if r, err = action.GetFilesWithinDir(f.Id); err !=nil {
 				return  err
 			}
 			if err = GetParameters(r); err != nil {

@@ -4,9 +4,27 @@ import (
 	"fmt"
 	"errors"
 	"google.golang.org/api/admin/reports/v1"
+	"github.com/ken5scal/gsuite_toolkit/services/reports"
+	"github.com/ken5scal/gsuite_toolkit/services"
 )
 
-func GetNon2StepVerifiedUsers(report *admin.UsageReports) error {
+type ReportAction struct {
+	*reports.Service
+}
+
+func NewReportAction(s services.Service) (*ReportAction, error) {
+	if _, ok := s.(*reports.Service); !ok {
+		return nil, errors.New(fmt.Sprintf("Invalid type: %T", s))
+	}
+	return &ReportAction{s.(*reports.Service)}, nil
+}
+
+func (action ReportAction) GetNon2StepVerifiedUsers() error {
+	report, err := action.Get2StepVerifiedStatusReport()
+	if err != nil {
+		return err
+	}
+
 	if len(report.UsageReports) == 0 {
 		return errors.New("No Report Available")
 	}
@@ -31,9 +49,17 @@ func GetNon2StepVerifiedUsers(report *admin.UsageReports) error {
 	return nil
 }
 
+func (action ReportAction) GetAllLoginActivities(daysAgo int) ([]*admin.Activity, error) {
+	activities, err := action.GetLoginActivities(daysAgo)
+	if err != nil {
+		return nil, err
+	}
+	return activities, nil
+}
+
 // GetIllegalLoginUsersAndIp
 // Main purpose is to detect employees who have not logged in from office for 30days
-func GetIllegalLoginUsersAndIp(activities []*admin.Activity, officeIPs []string) error {
+func  (action ReportAction)  GetIllegalLoginUsersAndIp(activities []*admin.Activity, officeIPs []string) error {
 	data := make(map[string]*LoginInformation)
 	for _, activity := range activities {
 		email := activity.Actor.Email

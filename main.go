@@ -78,7 +78,11 @@ func main() {
 				{
 					Name: actions.SubCommandList, Usage: actions.ListUsage,
 					Action: func(context *cli.Context) error {
-						return actions.SearchAllFolders(s)
+						action, err := actions.NewDriveAction(s)
+						if err != nil {
+							return err
+						}
+						return action.SearchAllFolders()
 					},
 				},
 				{
@@ -87,7 +91,11 @@ func main() {
 						if context.NArg() != 1 {
 							return errors.New("Number of keyword must be exactly 1")
 						}
-						return actions.SearchFolders(s, context.Args()[0])
+						action, err := actions.NewDriveAction(s)
+						if err != nil {
+							return err
+						}
+						return action.SearchFoldersWithName(context.Args()[0])
 					},
 				},
 			},
@@ -130,29 +138,25 @@ func main() {
 				{
 					Name:  "non2sv", Usage: "get employees who have not enabled 2sv",
 					Action: func(context *cli.Context) error {
-						r, err := s.(*reportService.Service).Get2StepVerifiedStatusReport()
+						action, err := actions.NewReportAction(s)
 						if err != nil {
 							return err
 						}
-						err = actions.GetNon2StepVerifiedUsers(r)
-						if err != nil {
-							return err
-						}
-						return nil
+						return action.GetNon2StepVerifiedUsers()
 					},
 				},
 				{
 					Name:  "suspicious_login", Usage: "get employees who have not been office for 30 days, but accessing",
 					Action: func(c *cli.Context) error {
-						r, err := s.(*reportService.Service).GetLoginActivities(45)
+						action, err := actions.NewReportAction(s)
 						if err != nil {
 							return err
 						}
-						err = actions.GetIllegalLoginUsersAndIp(r, tomlConf.GetAllIps())
+						activities, err := action.GetAllLoginActivities(45)
 						if err != nil {
 							return err
 						}
-						return nil
+						return action.GetIllegalLoginUsersAndIp(activities, tomlConf.GetAllIps())
 					},
 				},
 			},
