@@ -15,12 +15,12 @@ type DriveController struct {
 }
 
 const (
-	CommandDrive         = "drive"
 	FolderMimeType = "application/vnd.google-apps.folder"
-	GeneralUsage = "Audit files within Google Drive"
+	CommandDrive         = "drive"
 	SubCommandList = "list"
-	ListUsage = "list all of files"
 	SubCommandSearch = "list"
+	GeneralUsage = "Audit files within Google Drive"
+	ListUsage = "list all files"
 	SearchUsage = "search a keyword buy specifying an argument"
 )
 

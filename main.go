@@ -25,6 +25,7 @@ const (
 	ClientSecretFileName = "client_secret.json"
 	CommandReport        = "report"
 	CommandLogin         = "login"
+	CommandDrive         = "drive"
 )
 
 type network struct {
@@ -66,7 +67,8 @@ func main() {
 	}
 	app.Commands = []cli.Command{
 		{
-			Name: actions.CommandDrive, Category: actions.CommandDrive, Usage: actions.GeneralUsage,
+			Name: actions.CommandDrive, Category: actions.CommandDrive,
+			Usage: actions.GeneralUsage,
 			Before: func(*cli.Context) error {
 				s = driveService.Init()
 				return s.SetClient(gsuiteClient)
