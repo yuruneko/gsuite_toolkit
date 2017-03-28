@@ -23,6 +23,8 @@ func NewReportAction(s services.Service) (*ReportAction, error) {
 	return nil, errors.New(fmt.Sprintf("Invalid type: %T", s))
 }
 
+// TODO Check Admin Login
+
 func (action ReportAction) GetNon2StepVerifiedUsers() error {
 	report, err := action.report.Get2StepVerifiedStatusReport()
 	if err != nil {

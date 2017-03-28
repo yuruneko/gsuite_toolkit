@@ -23,7 +23,7 @@ import (
 
 const (
 	ClientSecretFileName = "client_secret.json"
-	CommandReport        = "report"
+	CommandLogin         = "login"
 )
 
 type network struct {
@@ -99,7 +99,7 @@ func main() {
 			},
 		},
 		{
-			Name: CommandReport, Category: CommandReport, Usage:    "Gain insights on content management with Google Drive activity reports. Audit administrator actions. Generate customer and user usage reports.",
+			Name: CommandLogin, Category: CommandLogin, Usage: "Gain insights on content management with Google Drive activity reports. Audit administrator actions. Generate customer and user usage reports.",
 			Before: func(*cli.Context) error {
 				s = reportService.Init()
 				err := s.(*reportService.Service).SetClient(gsuiteClient)
@@ -123,6 +123,7 @@ func main() {
 					},
 				},
 				{
+					// TODO probably account command?
 					Name:  "non2sv", Usage: "get employees who have not enabled 2sv",
 					Action: func(context *cli.Context) error {
 						action, err := actions.NewReportAction(s)
