@@ -33,11 +33,13 @@ type network struct {
 	Ip []string
 }
 
-func buildCommand(name, usage string, action func(context *cli.Context) error ) cli.Command {
+func buildCommand(name, usage string, subCommands cli.Commands, before, action func(context *cli.Context) error) cli.Command {
 	return cli.Command{
 		Name:name,
 		Category:name,
 		Usage:usage,
+		Before:before,
+		Subcommands: subCommands,
 		Action:action,
 	}
 }
@@ -69,20 +71,15 @@ func main() {
 		SetScopes(tomlConf.Scopes).
 		Build()
 	app.Commands = []cli.Command{
-		{
-			Name:     CommandDrive,
-			Category: CommandDrive,
-			Usage:    "Audit files within Google Drive.",
-			Before: func(*cli.Context) error {
-				s = driveService.Init()
-				return s.SetClient(gsuiteClient)
-			},
-			Subcommands: []cli.Command{
-				buildCommand("list", "list all files",
+		buildCommand(
+			CommandDrive,
+			"Audit files within Google Drive.",
+			[]cli.Command{
+				buildCommand("list", "list all files",nil,nil,
 					func(context *cli.Context) error {
 						return actions.SearchAllFolders(s)
 					}),
-				buildCommand("search", "search file",
+				buildCommand("search", "search file",nil, nil,
 					func(context *cli.Context) error {
 						if context.NArg() != 1 {
 							return errors.New("Number of keyword must be exactly 1")
@@ -90,7 +87,16 @@ func main() {
 						return actions.SearchFolders(s, context.Args()[0])
 					}),
 			},
-		},
+			func(*cli.Context) error {
+				s = driveService.Init()
+				return s.SetClient(gsuiteClient)
+			},
+			func(c *cli.Context) error {
+				if c.NArg() == 0 {
+					cli.ShowAppHelp(c)
+				}
+				return nil
+			}),
 		{
 			Name:     CommandLogin,
 			Category: CommandLogin,
