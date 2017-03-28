@@ -54,17 +54,19 @@ func main() {
 		log.Fatalf("error: %v", err)
 	}
 
-	app := cli.NewApp()
-	app.Name = "gsuite"
-	app.Usage = "help managing gsuite"
-	app.Version = "0.1"
-	app.Authors = []cli.Author{{Name: "Kengo Suzuki", Email:"kengoscal@gmai.com"}}
-	app.Action  = func(c *cli.Context) error {
+	showHelpFunc := func(c *cli.Context) error {
 		if c.NArg() == 0 {
 			cli.ShowAppHelp(c)
 		}
 		return nil
 	}
+
+	app := cli.NewApp()
+	app.Name = "gsuite"
+	app.Usage = "help managing gsuite"
+	app.Version = "0.1"
+	app.Authors = []cli.Author{{Name: "Kengo Suzuki", Email:"kengoscal@gmai.com"}}
+	app.Action  = showHelpFunc
 
 	gsuiteClient, err = client.CreateConfig().
 		SetClientSecretFilename(ClientSecretFileName).
@@ -91,12 +93,7 @@ func main() {
 				s = driveService.Init()
 				return s.SetClient(gsuiteClient)
 			},
-			func(c *cli.Context) error {
-				if c.NArg() == 0 {
-					cli.ShowAppHelp(c)
-				}
-				return nil
-			}),
+			showHelpFunc),
 		{
 			Name:     CommandLogin,
 			Category: CommandLogin,
