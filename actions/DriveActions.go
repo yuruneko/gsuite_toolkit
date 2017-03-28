@@ -15,19 +15,28 @@ type DriveController struct {
 }
 
 const (
+	CommandDrive         = "drive"
 	FolderMimeType = "application/vnd.google-apps.folder"
+	GeneralUsage = "Audit files within Google Drive"
+	SubCommandList = "list"
+	ListUsage = "list all of files"
+	SubCommandSearch = "list"
+	SearchUsage = "search a keyword buy specifying an argument"
 )
 
-func NewDriveController(s *drives.Service) *DriveController {
-	return &DriveController{s}
+func NewDriveController(s services.Service) (*DriveController, error) {
+	if _, ok := s.(*drives.Service); !ok {
+		return nil, errors.New(fmt.Sprintf("Invalid type: %T", s))
+	}
+	return &DriveController{s.(*drives.Service)}, nil
 }
 
 func SearchFolders(s services.Service, title string) error {
-	if _, ok := s.(*drives.Service); !ok {
-		return errors.New(fmt.Sprintf("Invalid type: %T", s))
+	dc, err := NewDriveController(s)
+	if err != nil {
+		return err
 	}
 
-	dc := NewDriveController(s.(*drives.Service))
 	// 本来は'Googleフォーム'で検索したいが、検索結果が帰ってこない
 	if r, err := dc.GetDriveMaterialsWithTitle(title, FolderMimeType); err !=nil {
 		return  err
@@ -53,11 +62,10 @@ func SearchFolders(s services.Service, title string) error {
 }
 
 func SearchAllFolders(s services.Service) error {
-	if _, ok := s.(*drives.Service); !ok {
-		return errors.New(fmt.Sprintf("Invalid type: %T", s))
+	dc, err := NewDriveController(s)
+	if err != nil {
+		return err
 	}
-
-	dc := NewDriveController(s.(*drives.Service))
 
 	if r, err := dc.GetDriveMaterialsWithTitle("*", FolderMimeType); err !=nil {
 		return  err

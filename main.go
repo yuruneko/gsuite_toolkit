@@ -1,47 +1,35 @@
 package main
 
 import (
-	"log"
-	"github.com/ken5scal/gsuite_toolkit/client"
 	"encoding/csv"
-	"io"
-	"os"
-	"strings"
-	"github.com/urfave/cli"
-	"sort"
-	reportService "github.com/ken5scal/gsuite_toolkit/services/reports"
-	userService "github.com/ken5scal/gsuite_toolkit/services/users"
-	driveService "github.com/ken5scal/gsuite_toolkit/services/drives"
+	"errors"
+	"fmt"
 	"github.com/BurntSushi/toml"
+	"github.com/ken5scal/gsuite_toolkit/actions"
+	"github.com/ken5scal/gsuite_toolkit/client"
 	"github.com/ken5scal/gsuite_toolkit/models"
 	"github.com/ken5scal/gsuite_toolkit/services"
-	"fmt"
-	"errors"
+	driveService "github.com/ken5scal/gsuite_toolkit/services/drives"
+	reportService "github.com/ken5scal/gsuite_toolkit/services/reports"
+	userService "github.com/ken5scal/gsuite_toolkit/services/users"
+	"github.com/urfave/cli"
+	"io"
+	"log"
 	"net/http"
-	"github.com/ken5scal/gsuite_toolkit/actions"
+	"os"
+	"sort"
+	"strings"
 )
 
 const (
 	ClientSecretFileName = "client_secret.json"
 	CommandReport        = "report"
 	CommandLogin         = "login"
-	CommandDrive         = "drive"
 )
 
 type network struct {
 	Name string
-	Ip []string
-}
-
-func buildCommand(name, usage string, subCommands cli.Commands, before, action func(context *cli.Context) error) cli.Command {
-	return cli.Command{
-		Name:name,
-		Category:name,
-		Usage:usage,
-		Before:before,
-		Subcommands: subCommands,
-		Action:action,
-	}
+	Ip   []string
 }
 
 func main() {
@@ -65,48 +53,52 @@ func main() {
 	app.Name = "gsuite"
 	app.Usage = "help managing gsuite"
 	app.Version = "0.1"
-	app.Authors = []cli.Author{{Name: "Kengo Suzuki", Email:"kengoscal@gmai.com"}}
-	app.Action  = showHelpFunc
+	app.Authors = []cli.Author{{Name: "Kengo Suzuki", Email: "kengoscal@gmai.com"}}
+	app.Action = showHelpFunc
 
 	gsuiteClient, err = client.CreateConfig().
 		SetClientSecretFilename(ClientSecretFileName).
 		SetScopes(tomlConf.Scopes).
 		Build()
+	if err != nil {
+		fmt.Errorf("Failed building client: %v", err)
+		return
+	}
 	app.Commands = []cli.Command{
-		buildCommand(
-			CommandDrive,
-			"Audit files within Google Drive.",
-			[]cli.Command{
-				buildCommand("list", "list all files",nil,nil,
-					func(context *cli.Context) error {
+		{
+			Name: actions.CommandDrive, Category: actions.CommandDrive, Usage: actions.GeneralUsage,
+			Before: func(*cli.Context) error {
+				s = driveService.Init()
+				return s.SetClient(gsuiteClient)
+			},
+			Action: showHelpFunc,
+			Subcommands: []cli.Command{
+				{
+					Name: actions.SubCommandList, Usage: actions.ListUsage,
+					Action: func(context *cli.Context) error {
 						return actions.SearchAllFolders(s)
-					}),
-				buildCommand("search", "search file",nil, nil,
-					func(context *cli.Context) error {
+					},
+				},
+				{
+					Name: actions.SubCommandSearch, Usage: actions.SearchUsage,
+					Action: func(context *cli.Context) error {
 						if context.NArg() != 1 {
 							return errors.New("Number of keyword must be exactly 1")
 						}
 						return actions.SearchFolders(s, context.Args()[0])
-					}),
+					},
+				},
 			},
-			func(*cli.Context) error {
-				s = driveService.Init()
-				return s.SetClient(gsuiteClient)
-			},
-			showHelpFunc),
+		},
 		{
-			Name:     CommandLogin,
-			Category: CommandLogin,
-			Usage:    "Create user profiles, manage user information, even add administrators.",
+			Name: CommandLogin, Category: CommandLogin,
+			Usage: "Create user profiles, manage user information, even add administrators.",
 			Before: func(*cli.Context) error {
-				if gsuiteClient == nil {
-					return errors.New("No Client. Execute `gsuite_tookit setup`")
-				}
-
 				s = userService.Init()
 				err := s.SetClient(gsuiteClient)
 				return err
 			},
+			Action: showHelpFunc,
 			Subcommands: []cli.Command{
 				{
 					Name:  "rare-login",
@@ -125,18 +117,16 @@ func main() {
 			},
 		},
 		{
-			Name:     CommandReport,
-			Category: CommandReport,
-			Usage:    "Gain insights on content management with Google Drive activity reports. Audit administrator actions. Generate customer and user usage reports.",
+			Name: CommandReport, Category: CommandReport, Usage:    "Gain insights on content management with Google Drive activity reports. Audit administrator actions. Generate customer and user usage reports.",
 			Before: func(*cli.Context) error {
 				s = reportService.Init()
 				err := s.(*reportService.Service).SetClient(gsuiteClient)
 				return err
 			},
+			Action: showHelpFunc,
 			Subcommands: []cli.Command{
 				{
-					Name:  "non2sv",
-					Usage: "get employees who have not enabled 2sv",
+					Name:  "non2sv", Usage: "get employees who have not enabled 2sv",
 					Action: func(context *cli.Context) error {
 						r, err := s.(*reportService.Service).Get2StepVerifiedStatusReport()
 						if err != nil {
@@ -150,8 +140,7 @@ func main() {
 					},
 				},
 				{
-					Name:  "suspicious_login",
-					Usage: "get employees who have not been office for 30 days, but accessing",
+					Name:  "suspicious_login", Usage: "get employees who have not been office for 30 days, but accessing",
 					Action: func(c *cli.Context) error {
 						r, err := s.(*reportService.Service).GetLoginActivities(45)
 						if err != nil {
