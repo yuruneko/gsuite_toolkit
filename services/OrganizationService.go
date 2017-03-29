@@ -1,4 +1,4 @@
-package organizations
+package services
 
 import (
 	"errors"
@@ -7,27 +7,34 @@ import (
 	"net/http"
 )
 
-// Service provides Organization Units related functionality
+// OrganizationService provides Organization Units related functionality
 // Details are available in a following link
 // https://developers.google.com/admin-sdk/directory/v1/guides/manage-org-units#create_ou
-type Service struct {
+type OrganizationService struct {
 	*admin.OrgunitsService
 	*http.Client
 }
 
 // SetClient creates instance of Organization related Services
-func NewService(client *http.Client) (*Service, error) {
+func InitOrganizationService() (*OrganizationService) {
+	return &OrganizationService{}
+}
+
+// SetClient creates instance of User related Services
+func (s *OrganizationService) SetClient(client *http.Client) (error) {
 	srv, err := admin.New(client)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return &Service{srv.Orgunits, client}, nil
+	s.OrgunitsService = srv.Orgunits
+	s.Client = client
+	return nil
 }
 
 // GetOrganizationUnit retrieves specific organization unit
 // EX: GET https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits/corp/sales/frontline+sales
 // Example: GetOrganizationUnit("CISO室/セキュリティ推進グループ")
-func (service *Service) GetOrganizationUnit(paths ...string) (*admin.OrgUnit, error) {
+func (service *OrganizationService) GetOrganizationUnit(paths ...string) (*admin.OrgUnit, error) {
 	var completePath []string
 	for _, path := range paths {
 		completePath = append(completePath, path)
@@ -37,13 +44,13 @@ func (service *Service) GetOrganizationUnit(paths ...string) (*admin.OrgUnit, er
 
 // GetAllOrganizationUnits fetch all sub-organization units
 // GET https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits?orgUnitPath=full org unit path&type=all or children
-func (service *Service) GetAllOrganizationUnits() (*admin.OrgUnits, error) {
+func (service *OrganizationService) GetAllOrganizationUnits() (*admin.OrgUnits, error) {
 	return service.List("my_customer").Type("all").Do()
 }
 
 // CreateOrganizationUnit creates an organization unit
 // POST https://www.googleapis.com/admin/directory/v1/customer/my_customer/orgunits
-func (service *Service) CreateOrganizationUnit(name, parentOrgUnitPath string) (*admin.OrgUnit, error) {
+func (service *OrganizationService) CreateOrganizationUnit(name, parentOrgUnitPath string) (*admin.OrgUnit, error) {
 	newOrgUnit := &admin.OrgUnit{
 		Name:              name,
 		ParentOrgUnitPath: parentOrgUnitPath,
@@ -53,7 +60,7 @@ func (service *Service) CreateOrganizationUnit(name, parentOrgUnitPath string) (
 
 // CreateOrganizationUnits creates multiple organization units under same parent Org Unit
 // Example: CreateOrganizationUnits("CISO室", []string{"セキュリティ推進グループ", "サービスインフラグループ", "社内インフラグループ", "情報セキュリティ管理部"})
-func (service *Service) CreateOrganizationUnits(names []string, parentOrgUnitPath string) ([]*admin.OrgUnit, error) {
+func (service *OrganizationService) CreateOrganizationUnits(names []string, parentOrgUnitPath string) ([]*admin.OrgUnit, error) {
 	if len(names) < 1 {
 		return nil, errors.New("No Names are defined")
 	}
@@ -84,7 +91,7 @@ func (service *Service) CreateOrganizationUnits(names []string, parentOrgUnitPat
 //  "description": "The BEST sales support team"
 //}
 // Example: UpdateOrganizationUnit(r, "CISO室")
-func (service *Service) UpdateOrganizationUnit(NewOrgUnit *admin.OrgUnit, paths ...string) (*admin.OrgUnit, error) {
+func (service *OrganizationService) UpdateOrganizationUnit(NewOrgUnit *admin.OrgUnit, paths ...string) (*admin.OrgUnit, error) {
 	var path []string
 	for _, p := range paths {
 		path = append(path, p)

@@ -65,7 +65,7 @@ func main() {
 			Name: actions.CommandDrive, Category: actions.CommandDrive,
 			Usage: actions.GeneralUsage,
 			Before: func(*cli.Context) error {
-				s = services.DriveServiceInit()
+				s = services.InitDriveService()
 				return s.SetClient(gsuiteClient)
 			},
 			Action: showHelpFunc,
@@ -98,7 +98,7 @@ func main() {
 		{
 			Name: CommandLogin, Category: CommandLogin, Usage: "Gain insights on content management with Google Drive activity reports. Audit administrator actions. Generate customer and user usage reports.",
 			Before: func(*cli.Context) error {
-				s = services.ReportServiceInit()
+				s = services.InitReportService()
 				err := s.SetClient(gsuiteClient)
 				return err
 			},
@@ -107,7 +107,7 @@ func main() {
 				{
 					Name:  "rare-login", Usage: "get employees who have not logged in for a while",
 					Before: func(*cli.Context) error {
-						s = services.UserServiceInit()
+						s = services.InitUserService()
 						err := s.SetClient(gsuiteClient)
 						return err
 					},

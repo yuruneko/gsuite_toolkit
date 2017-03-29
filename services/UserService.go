@@ -15,7 +15,7 @@ type UserService struct {
 }
 
 // Initialize UserService
-func UserServiceInit() (s *UserService) {
+func InitUserService() (s *UserService) {
 	return &UserService{}
 }
 

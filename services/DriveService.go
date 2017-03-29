@@ -17,7 +17,7 @@ type DriveService struct {
 }
 
 // Initialize DriveService
-func DriveServiceInit() (s *DriveService) {
+func InitDriveService() (s *DriveService) {
 	return &DriveService{}
 }
 

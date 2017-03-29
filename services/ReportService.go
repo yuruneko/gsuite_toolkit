@@ -25,7 +25,7 @@ type ReportService struct {
 }
 
 // Initialize ReportService
-func ReportServiceInit() (s *ReportService) {
+func InitReportService() (s *ReportService) {
 	return &ReportService{}
 }
 
