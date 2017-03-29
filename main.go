@@ -8,8 +8,6 @@ import (
 	"github.com/ken5scal/gsuite_toolkit/actions"
 	"github.com/ken5scal/gsuite_toolkit/client"
 	"github.com/ken5scal/gsuite_toolkit/models"
-	"github.com/ken5scal/gsuite_toolkit/services"
-	driveService "github.com/ken5scal/gsuite_toolkit/services/drives"
 	reportService "github.com/ken5scal/gsuite_toolkit/services/reports"
 	userService "github.com/ken5scal/gsuite_toolkit/services/users"
 	"github.com/urfave/cli"
@@ -19,6 +17,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"github.com/ken5scal/gsuite_toolkit/services"
 )
 
 const (
@@ -68,7 +67,7 @@ func main() {
 			Name: actions.CommandDrive, Category: actions.CommandDrive,
 			Usage: actions.GeneralUsage,
 			Before: func(*cli.Context) error {
-				s = driveService.Init()
+				s = services.Init()
 				return s.SetClient(gsuiteClient)
 			},
 			Action: showHelpFunc,

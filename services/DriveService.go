@@ -1,4 +1,4 @@
-package drives
+package services
 
 import (
 	"google.golang.org/api/drive/v3"
@@ -6,23 +6,23 @@ import (
 	"fmt"
 )
 
-// Service provides Drive related administration tasks.
+// DriveService provides Drive related administration tasks.
 // Details are available in a following link.
 // https://developers.google.com/drive/v3/web/about-sdk
-type Service struct {
+type DriveService struct {
 	*drive.FilesService
 	*http.Client
 	Files []*drive.File
 	Call  *drive.FilesListCall
 }
 
-// Initialize Service
-func Init() (s *Service) {
-	return &Service{}
+// Initialize DriveService
+func Init() (s *DriveService) {
+	return &DriveService{}
 }
 
 // SetClient sets a client
-func (s *Service) SetClient(client *http.Client) (error) {
+func (s *DriveService) SetClient(client *http.Client) (error) {
 	srv, err := drive.New(client)
 	if err != nil {
 		return err
@@ -37,7 +37,7 @@ func (s *Service) SetClient(client *http.Client) (error) {
 // Note returning files are ones of which authorized user can see
 // Refer to the following link for supported mimeType: https://developers.google.com/drive/v3/web/mime-types?authuser=0
 // https://developers.google.com/drive/v3/reference/files/list?authuser=1
-func (s *Service) GetDriveMaterialsWithTitle(title, mimeType string) ([]*drive.File, error) {
+func (s *DriveService) GetDriveMaterialsWithTitle(title, mimeType string) ([]*drive.File, error) {
 	call := s.FilesService.
 		List().
 		//Corpus("domain").
@@ -65,7 +65,7 @@ func (s *Service) GetDriveMaterialsWithTitle(title, mimeType string) ([]*drive.F
 }
 
 // GetFilesWithinDir searches files within a directory by regular expression
-func (s *Service) GetFilesWithinDir(parentsId string) ([]*drive.File, error) {
+func (s *DriveService) GetFilesWithinDir(parentsId string) ([]*drive.File, error) {
 	s.Call = s.FilesService.
 		List().
 		OrderBy("modifiedTime").
@@ -80,11 +80,11 @@ func (s *Service) GetFilesWithinDir(parentsId string) ([]*drive.File, error) {
 	return s.Files, nil
 }
 
-func (s *Service) GetParents(parentsId string) (*drive.File, error) {
+func (s *DriveService) GetParents(parentsId string) (*drive.File, error) {
 	return s.FilesService.Get(parentsId).Fields("name").Do()
 }
 
-func (s *Service) RepeatCallerUntilNoPageToken() error {
+func (s *DriveService) RepeatCallerUntilNoPageToken() error {
 	s.Files = []*drive.File{}
 	for {
 		r, e := s.Call.Do()
