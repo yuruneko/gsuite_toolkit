@@ -8,7 +8,6 @@ import (
 	"github.com/ken5scal/gsuite_toolkit/actions"
 	"github.com/ken5scal/gsuite_toolkit/client"
 	"github.com/ken5scal/gsuite_toolkit/models"
-	reportService "github.com/ken5scal/gsuite_toolkit/services/reports"
 	"github.com/urfave/cli"
 	"io"
 	"log"
@@ -99,8 +98,8 @@ func main() {
 		{
 			Name: CommandLogin, Category: CommandLogin, Usage: "Gain insights on content management with Google Drive activity reports. Audit administrator actions. Generate customer and user usage reports.",
 			Before: func(*cli.Context) error {
-				s = reportService.Init()
-				err := s.(*reportService.Service).SetClient(gsuiteClient)
+				s = services.ReportServiceInit()
+				err := s.SetClient(gsuiteClient)
 				return err
 			},
 			Action: showHelpFunc,

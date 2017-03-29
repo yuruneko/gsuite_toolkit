@@ -1,4 +1,4 @@
-package reports
+package services
 
 import (
 	"google.golang.org/api/admin/reports/v1"
@@ -8,13 +8,13 @@ import (
 	"google.golang.org/api/googleapi"
 )
 
-// Service provides following functions.
+// ReportService provides following functions.
 // Content management with Google Drive activity reports.
 // Audit administrator actions.
 // Generate customer and user usage reports.
 // Details are available in a following link
 // https://developers.google.com/admin-sdk/reports/
-type Service struct {
+type ReportService struct {
 	*admin.UserUsageReportService
 	*admin.ActivitiesService
 	*admin.ChannelsService
@@ -24,13 +24,13 @@ type Service struct {
 	Activities []*admin.Activity
 }
 
-// Initialize Service
-func Init() (s *Service) {
-	return &Service{}
+// Initialize ReportService
+func ReportServiceInit() (s *ReportService) {
+	return &ReportService{}
 }
 
 // SetClient creates instance of Report related Services
-func (s *Service) SetClient(client *http.Client) (error) {
+func (s *ReportService) SetClient(client *http.Client) (error) {
 	srv, err := admin.New(client)
 	if err != nil {
 		return err
@@ -49,7 +49,7 @@ func (s *Service) SetClient(client *http.Client) (error) {
 // params should be one or combination of user report parameters
 // https://developers.google.com/admin-sdk/reports/v1/guides/manage-usage-users
 // Example:GetUserUsage("all", "2017-01-01", "accounts:is_2sv_enrolled,"accounts:last_name"")
-func (s *Service) GetUserUsage(key, date, params string) (*admin.UsageReports, error) {
+func (s *ReportService) GetUserUsage(key, date, params string) (*admin.UsageReports, error) {
 	return s.UserUsageReportService.
 		Get(key, date).
 		Parameters(params).
@@ -60,7 +60,7 @@ func (s *Service) GetUserUsage(key, date, params string) (*admin.UsageReports, e
 // date Must be in ISO 8601 format, yyyy-mm-dd
 // https://developers.google.com/admin-sdk/reports/v1/guides/manage-usage-users
 // Example: Get2StepVerifiedStatusReport("2017-01-01")
-func (s *Service) Get2StepVerifiedStatusReport() (*admin.UsageReports, error) {
+func (s *ReportService) Get2StepVerifiedStatusReport() (*admin.UsageReports, error) {
 	var usageReports *admin.UsageReports
 	var err error
 	max_retry := 10
@@ -84,7 +84,7 @@ func (s *Service) Get2StepVerifiedStatusReport() (*admin.UsageReports, error) {
 // GetLoginActivities reports login activities of all Users within organization
 // daysAgo: number of past days you are interested from present time
 // EX: GetLoginActivities(30)
-func (s *Service) GetLoginActivities(daysAgo int) ([]*admin.Activity, error) {
+func (s *ReportService) GetLoginActivities(daysAgo int) ([]*admin.Activity, error) {
 	time30DaysAgo := time.Now().Add(-time.Duration(daysAgo) * time.Hour * 24)
 	s.Call = s.ActivitiesService.
 		List("all", "login").
@@ -97,7 +97,7 @@ func (s *Service) GetLoginActivities(daysAgo int) ([]*admin.Activity, error) {
 	return s.Activities, nil
 }
 
-func (s *Service) RepeatCallerUntilNoPageToken() error {
+func (s *ReportService) RepeatCallerUntilNoPageToken() error {
 	s.Activities =  []*admin.Activity{}
 	for {
 		r, e := s.Call.Do()
