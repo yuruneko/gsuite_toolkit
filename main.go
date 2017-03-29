@@ -9,7 +9,6 @@ import (
 	"github.com/ken5scal/gsuite_toolkit/client"
 	"github.com/ken5scal/gsuite_toolkit/models"
 	reportService "github.com/ken5scal/gsuite_toolkit/services/reports"
-	userService "github.com/ken5scal/gsuite_toolkit/services/users"
 	"github.com/urfave/cli"
 	"io"
 	"log"
@@ -67,7 +66,7 @@ func main() {
 			Name: actions.CommandDrive, Category: actions.CommandDrive,
 			Usage: actions.GeneralUsage,
 			Before: func(*cli.Context) error {
-				s = services.Init()
+				s = services.DriveServiceInit()
 				return s.SetClient(gsuiteClient)
 			},
 			Action: showHelpFunc,
@@ -109,7 +108,7 @@ func main() {
 				{
 					Name:  "rare-login", Usage: "get employees who have not logged in for a while",
 					Before: func(*cli.Context) error {
-						s = userService.Init()
+						s = services.UserServiceInit()
 						err := s.SetClient(gsuiteClient)
 						return err
 					},
